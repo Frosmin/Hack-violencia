@@ -1,4 +1,6 @@
 const geminiService = require('../services/geminiService');
+const { sendAlertEmail } = require('../services/emailService'); 
+const crypto = require('crypto'); 
 
 const askLLMPhoto = async (req, res) => {
   try {
@@ -38,31 +40,77 @@ const askLLMPhoto = async (req, res) => {
 
 
 
-const askLLMText = async (req, res) => {
+// const askLLMText = async (req, res) => {
+//   try {
+//     const { prompt } = req.body;
+
+//     if (!prompt) {
+//       return res.status(400).json({ error: "El campo 'prompt' es requerido" });
+//     }
+
+//     const respuesta = await geminiService.geminiText(prompt);
+
+
+//     res.status(200).json({
+//       success: true,
+//       data: respuesta
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       error: error.message
+//     });
+//   }
+// };
+
+
+const askLLMTextt = async (req, res) => {
   try {
-    const { prompt } = req.body;
+    // Recibimos prompt, alertEmail y platform desde el frontend
+    const { prompt, alertEmail, platform } = req.body;
 
     if (!prompt) {
-      return res.status(400).json({ error: "El campo 'prompt' es requerido" });
+      return res.status(400).json({ error: "Falta el prompt." });
     }
 
-    const respuesta = await geminiService.geminiText(prompt);
+    // Le pedimos a Gemini que analice
+    const result = await geminiText(prompt);
 
+    // Si Gemini dice que es violento, disparamos el correo
+    if (result && result.isViolent && alertEmail) {
+      console.log("🚨 Violencia detectada. Enviando correo automático a:", alertEmail);
+      
+      // Construimos un "incidente" simulado en el backend
+      const timestamp = new Date().toISOString();
+      const hash = crypto.createHash('sha256').update(`${prompt}${timestamp}`).digest('hex');
+      
+      const incidentData = {
+        platform: platform || "Desconocida",
+        riskLevel: "HIGH",
+        category: "Violencia detectada por IA",
+        messageText: prompt,
+        timestamp: timestamp,
+        hash: hash
+      };
 
-    res.status(200).json({
+      // Disparamos el correo (no bloqueamos con 'await' si queremos responder de inmediato al front)
+      sendAlertEmail(incidentData, alertEmail).catch(err => 
+        console.error("Error interno al enviar correo:", err)
+      );
+    }
+
+    return res.status(200).json({
       success: true,
-      data: respuesta
+      data: result,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    console.error("Error en askText:", error);
+    return res.status(500).json({ error: "Error interno procesando análisis." });
   }
 };
 
 module.exports = {
   askLLMPhoto,
-  askLLMText,
+  askLLMTextt,
 };
 

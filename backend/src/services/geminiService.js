@@ -27,26 +27,45 @@ const geminiPhoto = async (prompt, imageBase64, mimeType = "image/jpeg") => {
 const geminiText = async (prompt) => {
   try {
     if (!prompt || prompt.trim().length < 5) {
-      throw new Error(
-        "El prompt es demasiado corto para generar una sugerencia.",
-      );
+      throw new Error("El mensaje es demasiado corto para ser analizado.");
     }
-    const reformulationPrompt = `Si el siguiente mensaje no es etico o respetuoso, da una advertencia o recomendacion acerda del mensaje super corto de menos de 50 caracteres, si no tiene nada de malo retorna "Mensaje sin problemas": "${prompt}"`;
-    const res = await model.generateContent(reformulationPrompt);
+    
+    // Prompt estricto para que solo diga si es violento o no
+    const evaluationPrompt = `
+      Analiza el siguiente mensaje y determina si contiene lenguaje violento, agresividad, acoso, amenazas o faltas éticas graves.
+      Debes responder EXCLUSIVAMENTE en formato JSON válido con la siguiente estructura, sin texto extra ni etiquetas markdown:
+      {
+        "isViolent": true o false
+      }
+      Mensaje a analizar: "${prompt}"
+    `;
+
+    const res = await model.generateContent(evaluationPrompt);
 
     if (!res || !res.response || !res.response.text) {
-      throw new Error(
-        "La API no devolvió una respuesta válida para la reformulación.",
-      );
+      throw new Error("La API no devolvió una respuesta válida.");
     }
 
-    console.log("Sugerencia de reformulación:", res.response.text());
-    return res.response.text();
+    let rawText = res.response.text();
+    console.log("Respuesta cruda de Gemini:", rawText);
+
+    // Limpiamos la respuesta de posibles etiquetas markdown (```json ... ```)
+    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    // Parseamos a un objeto JavaScript
+    const parsedData = JSON.parse(rawText);
+    console.log("Resultado del análisis:", parsedData);
+
+    // Devolvemos el objeto { isViolent: true/false }
+    return parsedData;
   } catch (error) {
     console.log("Error en la API de Gemini:", error.message);
 
-    // Respuesta predeterminada en caso de error
-    return "No se pudo analizar o reformular el mensaje en este momento. Por favor, intenta nuevamente más tarde.";
+    // Respuesta segura en caso de fallo
+    return {
+      isViolent: false,
+      error: "No se pudo clasificar el mensaje."
+    };
   }
 };
 

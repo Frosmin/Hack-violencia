@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express();
 
 const geminiRoutes = require('./routes/llmRoute');
+const emailRoutes = require('./routes/emailRoute');
 
 
 app.use(express.json());
@@ -14,6 +15,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/gemini', geminiRoutes);
+app.use('/api/email', emailRoutes);
 
 
 module.exports = app;

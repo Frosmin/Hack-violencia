@@ -221,52 +221,67 @@ function observeMessages() {
 async function setupRewriteDetection() {
   let lastValue = "";
 
-  document.addEventListener("keydown", async (event) => {
-    if (!settings.rewriteSuggestions) {
-      removeRewriteSuggestion();
-      return;
-    }
-
-    const target = event.target;
-    if (!isEditable(target)) return;
-
-    clearTimeout(rewriteTimeout);
-    rewriteTimeout = setTimeout(async () => {
-      const value = editableValue(target).trim();
-
-      if (value.length < 5 || value === lastValue) return;
-      lastValue = value;
-
-      console.log("Detectando sugerencias de reescritura para:", value);
-
-      try {
-        const response = await fetch(
-          "http://localhost:3000/api/gemini/ask-text",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ prompt: value }),
-          },
-        );
-
-        if (!response.ok) {
-          console.error(
-            "Error en la solicitud al servidor:",
-            response.statusText,
-          );
-          return;
-        }
-
-        const data = await response.json();
-        const suggestion = data.data || "No se pudo generar una sugerencia.";
-        showRewriteSuggestion(target, suggestion);
-      } catch (error) {
-        console.error("Error al comunicarse con el servidor:", error);
+  // Agregamos el parámetro "true" al final para usar la fase de CAPTURA
+  document.addEventListener(
+    "keydown",
+    async (event) => {
+      if (!settings.rewriteSuggestions) {
+        removeRewriteSuggestion();
+        return;
       }
-    }, 700);
-  });
+
+      // A veces en WhatsApp el evento no sale directo del div editable,
+      // así que buscamos si el elemento clickeado o sus padres son editables
+      const target =
+        event.target.closest('[contenteditable="true"]') || event.target;
+      if (!isEditable(target)) return;
+
+      if (event.key === "Enter" && !event.shiftKey) {
+        const value = editableValue(target).trim();
+
+        if (value.length < 5 || value === lastValue) return;
+        lastValue = value;
+
+        console.log("Detectando mensaje enviado a Gemini:", value);
+
+                try {
+         const correoDelJefe = settings.alertEmail || "jefe@tuempresa.com";
+          
+          const response = await fetch(
+            "http://localhost:3000/api/gemini/ask-text",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              // Mandamos también el correo del jefe y la plataforma
+              body: JSON.stringify({ 
+                prompt: value,
+                alertEmail: correoDelJefe,
+                platform: platform 
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            console.error("Error en el servidor:", response.statusText);
+            return;
+          }
+
+          const data = await response.json();
+
+          if (data.data && data.data.isViolent) {
+            console.log("🚨 Mensaje violento. El backend ya está notificando al jefe.");
+          } else {
+            console.log("✅ Mensaje limpio.");
+          }
+        } catch (error) {
+          console.error("❌ Error fetch Gemini:", error);
+        }
+      }
+    },
+    true,
+  );
 }
 
 async function bootstrap() {
