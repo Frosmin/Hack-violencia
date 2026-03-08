@@ -10,12 +10,13 @@
     "Space Grotesk",
     -apple-system,
     sans-serif !important;
+  font-size: 8px !important; /* Reducir aún más el tamaño de la fuente */
   background: linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 100%) !important;
   border: 1.5px solid #ff3b3b !important;
-  border-radius: 12px !important;
-  padding: 12px 14px !important;
+  border-radius: 6px !important; /* Reducir el radio de los bordes */
+  padding: 4px 6px !important; /* Reducir el padding */
   margin: 6px 0 !important;
-  box-shadow: 0 4px 20px rgba(255, 59, 59, 0.25) !important;
+  box-shadow: 0 1px 5px rgba(255, 59, 59, 0.15) !important; /* Reducir la sombra */
   animation: escudoSlideIn 0.3s ease-out !important;
   z-index: 9999 !important;
 }
@@ -40,8 +41,8 @@
 .escudo-banner-header {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
-  margin-bottom: 8px !important;
+  gap: 2px !important;
+  margin-bottom: 2px !important;
 }
 
 .escudo-icon {
@@ -91,7 +92,7 @@
 
 .escudo-actions {
   display: flex !important;
-  gap: 6px !important;
+  gap: 2px !important;
   flex-wrap: wrap !important;
 }
 
@@ -195,12 +196,13 @@
   position: absolute !important;
   z-index: 999999 !important;
   font-family: "Space Grotesk", sans-serif !important;
+  font-size: 9px !important; /* Reducir el tamaño de la fuente */
   background: linear-gradient(135deg, #0a1a2a, #0d2340) !important;
   border: 1.5px solid #0ea5e9 !important;
-  border-radius: 12px !important;
-  padding: 12px 14px !important;
-  max-width: 380px !important;
-  box-shadow: 0 8px 30px rgba(14, 165, 233, 0.25) !important;
+  border-radius: 8px !important; /* Ajustar el radio de los bordes */
+  padding: 6px 8px !important; /* Reducir el padding */
+  max-width: 250px !important; /* Reducir el ancho máximo */
+  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.2) !important; /* Reducir la sombra */
   display: flex !important;
   gap: 10px !important;
   align-items: flex-start !important;
