@@ -17,8 +17,8 @@ export function createWarningBanner(node, result, options) {
     <div class="escudo-banner-body">
       <p>Se detecto un mensaje potencialmente peligroso: <strong>${result.category}</strong></p>
       <div class="escudo-actions">
-        <button class="escudo-btn escudo-btn-show">👁️ Ver mensaje</button>
-        <button class="escudo-btn escudo-btn-evidence">📋 Guardar evidencia</button>
+        <button class="escudo-btn escudo-btn-show">Ver mensaje</button>
+        <button class="escudo-btn escudo-btn-evidence">Guardar evidencia</button>
         <button class="escudo-btn escudo-btn-dismiss">✕ Ignorar</button>
       </div>
     </div>
