@@ -20,7 +20,7 @@ module.exports = {
         neutral: {
           light: "#F8F8F8",
           default: "#F6F6F6",
-          dark: "#C5C5C5",
+          dark: "#8E8EA5",
         },
         primary: {
           light: "#DDFFBA",
