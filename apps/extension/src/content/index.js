@@ -228,36 +228,36 @@ async function setupRewriteDetection() {
     const target = event.target;
     if (!isEditable(target)) return;
 
-    clearTimeout(rewriteTimeout);
-    rewriteTimeout = setTimeout(async () => {
-      const value = editableValue(target);
-      console.log("Detectando sugerencias de reescritura para:", value);
+    // Solo hacer la petición cuando se presiona Enter
+    if (event.key !== "Enter") return;
 
-      try {
-        const response = await fetch("http://localhost:3000/api/gemini/ask", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ prompt: value }),
-        });
+    const value = editableValue(target);
+    console.log("Detectando sugerencias de reescritura para:", value);
 
-        if (!response.ok) {
-          console.error(
-            "Error en la solicitud al servidor:",
-            response.statusText,
-          );
-          return;
-        }
+    try {
+      const response = await fetch("http://localhost:3000/api/gemini/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: value }),
+      });
 
-        const data = await response.json();
-        const suggestion =
-          data.suggestion || "No se pudo generar una sugerencia.";
-        showRewriteSuggestion(target, suggestion);
-      } catch (error) {
-        console.error("Error al comunicarse con el servidor:", error);
+      if (!response.ok) {
+        console.error(
+          "Error en la solicitud al servidor:",
+          response.statusText,
+        );
+        return;
       }
-    }, 600);
+
+      const data = await response.json();
+      const suggestion =
+        data.suggestion || "No se pudo generar una sugerencia.";
+      showRewriteSuggestion(target, suggestion);
+    } catch (error) {
+      console.error("Error al comunicarse con el servidor:", error);
+    }
   });
 }
 
