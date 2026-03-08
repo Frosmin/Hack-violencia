@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from "react";
 import { useExtensionStore } from "@/shared/state/useExtensionStore";
-import { riskLabel } from "@/shared/ui";
 import { PLATFORM_ICONS, CAT_COLORS } from "./design";
 
 function aggregateBy(items, selector) {
@@ -200,7 +199,7 @@ export default function DashboardApp() {
           </article>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4">
           <article className="esc-card p-4">
             <div className="mb-3 flex items-center justify-between">
               <p className="esc-title">Actividad reciente</p>
@@ -233,64 +232,6 @@ export default function DashboardApp() {
               {incidents.length === 0 && (
                 <p className="text-sm text-slate-400">Sin actividad todavia.</p>
               )}
-            </div>
-          </article>
-
-          <article className="esc-card p-4">
-            <p className="esc-title mb-3">Tabla de incidentes</p>
-            <div className="max-h-[360px] overflow-auto rounded-lg border border-slate-700/60">
-              <table className="min-w-full text-left text-xs">
-                <thead className="bg-slate-900 text-slate-400">
-                  <tr>
-                    <th className="px-3 py-2 font-semibold">Riesgo</th>
-                    <th className="px-3 py-2 font-semibold">Plataforma</th>
-                    <th className="px-3 py-2 font-semibold">Categoria</th>
-                    <th className="px-3 py-2 font-semibold">Hora</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {incidents.slice(0, 30).map((incident) => (
-                    <tr
-                      key={`row-${incident.id}`}
-                      className="border-t border-slate-800 bg-slate-900/40 text-slate-300"
-                    >
-                      <td className="px-3 py-2">
-                        <span
-                          className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                            incident.riskLevel === "HIGH"
-                              ? "bg-rose-500/20 text-rose-300"
-                              : "bg-amber-500/20 text-amber-300"
-                          }`}
-                        >
-                          {riskLabel(incident.riskLevel)}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2">
-                        {(PLATFORM_ICONS[incident.platform] || "🌐") +
-                          " " +
-                          incident.platform}
-                      </td>
-                      <td className="px-3 py-2">{incident.category}</td>
-                      <td className="px-3 py-2">
-                        {new Date(incident.timestamp).toLocaleTimeString("es", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </td>
-                    </tr>
-                  ))}
-                  {incidents.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={4}
-                        className="px-3 py-8 text-center text-slate-500"
-                      >
-                        Sin incidentes.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
             </div>
           </article>
         </div>
