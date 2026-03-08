@@ -63,7 +63,7 @@ function editableValue(element) {
 
 async function buildIncident(text, result, extra = {}) {
   const timestamp = new Date().toISOString();
-  const hash = await sha256WithFallback(`${text}${timestamp}`);
+  const hash = await sha256WithFallback(`${platform}::${text}`);
 
   return {
     platform,

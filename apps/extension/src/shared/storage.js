@@ -1,5 +1,9 @@
 import { DEFAULT_SETTINGS, INCIDENT_LIMIT } from "@/shared/defaults";
 
+function makeMessageKey(incident) {
+  return `${incident.platform}::${incident.messageText}`.toLowerCase().trim();
+}
+
 export async function ensureBootstrapData() {
   const result = await chrome.storage.local.get([
     "incidents",
@@ -46,6 +50,11 @@ export async function setIncidents(incidents) {
 
 export async function appendIncident(incident) {
   const current = await getIncidents();
+
+  const isDuplicate = current.some((i) => i.hash === incident.hash);
+
+  if (isDuplicate) return current;
+
   const next = [incident, ...current].slice(0, INCIDENT_LIMIT);
   await setIncidents(next);
   return next;
