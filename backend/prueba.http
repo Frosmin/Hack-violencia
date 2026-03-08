@@ -1,17 +1,8 @@
 ###
-POST http://localhost:3000/api/gemini/ask
+POST http://localhost:3000/api/gemini/ask-text
 Content-Type: application/json
 
 {
   "prompt": "dime que puedes hacer ?"
 }
 
-### Gato de prueba
-POST http://localhost:3000/api/gemini/ask-photo
-Content-Type: application/json
-
-{
-  "prompt": "Describe detalladamente qué ves en esta imagen. ¿Es un animal? ¿Qué animal es?",
-  "mimeType": "image/png",
-  "imageBase64": "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAGVJREFUKFNjZCASMDKgAnv37v3PwsLCCBWMjIyM////ZwWpYQQrAhnEyMjIwm4YRBAkDxeEC8I0wQTBwhAG41IC04TMBXFRyAKYXIAiAxWAxJEUwdwEdT5EESw/YYtgboLaH+KygDQQAMuWMtLp2/NNAAAAAElFTkSuQmCC"
-}
