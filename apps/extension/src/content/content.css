@@ -1,0 +1,243 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap");
+
+.escudo-warning-wrapper {
+  position: relative;
+  margin: 6px 0;
+}
+
+.escudo-warning-banner {
+  font-family:
+    "Space Grotesk",
+    -apple-system,
+    sans-serif !important;
+  font-size: 8px !important; /* Reducir aún más el tamaño de la fuente */
+  background: linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 100%) !important;
+  border: 1.5px solid #ff3b3b !important;
+  border-radius: 6px !important; /* Reducir el radio de los bordes */
+  padding: 4px 6px !important; /* Reducir el padding */
+  margin: 6px 0 !important;
+  box-shadow: 0 1px 5px rgba(255, 59, 59, 0.15) !important; /* Reducir la sombra */
+  animation: escudoSlideIn 0.3s ease-out !important;
+  z-index: 9999 !important;
+}
+
+.escudo-warning-wrapper[data-risk="MEDIUM"] .escudo-warning-banner {
+  background: linear-gradient(135deg, #1a1400 0%, #2d2200 100%) !important;
+  border-color: #ffb700 !important;
+  box-shadow: 0 4px 20px rgba(255, 183, 0, 0.2) !important;
+}
+
+@keyframes escudoSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.escudo-banner-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  margin-bottom: 2px !important;
+}
+
+.escudo-icon {
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+.escudo-title {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  color: #ff6b6b !important;
+  text-transform: uppercase !important;
+}
+
+.escudo-warning-wrapper[data-risk="MEDIUM"] .escudo-title {
+  color: #ffcf40 !important;
+}
+
+.escudo-badge {
+  margin-left: auto !important;
+  background: rgba(255, 59, 59, 0.2) !important;
+  color: #ff9999 !important;
+  border: 1px solid rgba(255, 59, 59, 0.4) !important;
+  border-radius: 20px !important;
+  padding: 2px 10px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+}
+
+.escudo-warning-wrapper[data-risk="MEDIUM"] .escudo-badge {
+  background: rgba(255, 183, 0, 0.2) !important;
+  color: #ffd970 !important;
+  border-color: rgba(255, 183, 0, 0.4) !important;
+}
+
+.escudo-banner-body p {
+  font-size: 12px !important;
+  color: #ccc !important;
+  margin: 0 0 10px !important;
+  line-height: 1.5 !important;
+}
+
+.escudo-banner-body p strong {
+  color: #ff9999 !important;
+}
+
+.escudo-actions {
+  display: flex !important;
+  gap: 2px !important;
+  flex-wrap: wrap !important;
+}
+
+.escudo-btn {
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 5px 12px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  border: 1px solid !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+}
+
+.escudo-btn-show {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #ddd !important;
+}
+
+.escudo-btn-show:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+.escudo-btn-evidence {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  color: #93c5fd !important;
+}
+
+.escudo-btn-evidence:hover {
+  background: rgba(59, 130, 246, 0.25) !important;
+}
+
+.escudo-btn-dismiss {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #888 !important;
+}
+
+.escudo-btn-dismiss:hover {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #aaa !important;
+}
+
+#escudo-grooming-alert {
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  z-index: 999999 !important;
+  font-family: "Space Grotesk", sans-serif !important;
+  animation: escudoSlideIn 0.4s ease-out !important;
+}
+
+.escudo-grooming-inner {
+  background: linear-gradient(135deg, #1a0025, #2d0047) !important;
+  border: 2px solid #cc00ff !important;
+  border-radius: 14px !important;
+  padding: 16px 20px !important;
+  max-width: 360px !important;
+  box-shadow: 0 8px 40px rgba(204, 0, 255, 0.35) !important;
+  display: flex !important;
+  gap: 14px !important;
+  align-items: flex-start !important;
+  color: #e0b3ff !important;
+}
+
+.escudo-grooming-icon {
+  font-size: 28px !important;
+  flex-shrink: 0 !important;
+}
+
+.escudo-grooming-inner strong {
+  display: block !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #ff80ff !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 6px !important;
+}
+
+.escudo-grooming-inner p {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  margin: 0 0 6px !important;
+}
+
+.escudo-grooming-inner button {
+  background: transparent !important;
+  border: none !important;
+  color: #888 !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+  margin-left: auto !important;
+}
+
+.escudo-rewrite-banner {
+  position: absolute !important;
+  z-index: 999999 !important;
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 9px !important; /* Reducir el tamaño de la fuente */
+  background: linear-gradient(135deg, #0a1a2a, #0d2340) !important;
+  border: 1.5px solid #0ea5e9 !important;
+  border-radius: 8px !important; /* Ajustar el radio de los bordes */
+  padding: 6px 8px !important; /* Reducir el padding */
+  max-width: 250px !important; /* Reducir el ancho máximo */
+  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.2) !important; /* Reducir la sombra */
+  display: flex !important;
+  gap: 10px !important;
+  align-items: flex-start !important;
+  animation: escudoSlideIn 0.25s ease-out !important;
+}
+
+.escudo-rewrite-icon {
+  font-size: 20px !important;
+  flex-shrink: 0 !important;
+}
+
+.escudo-rewrite-content strong {
+  display: block !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #38bdf8 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 5px !important;
+}
+
+.escudo-rewrite-content p {
+  font-size: 12px !important;
+  color: #bae6fd !important;
+  margin: 0 !important;
+  line-height: 1.5 !important;
+}
+
+.escudo-rewrite-close {
+  background: transparent !important;
+  border: none !important;
+  color: #666 !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+  margin-left: auto !important;
+}
