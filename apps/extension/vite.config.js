@@ -14,4 +14,14 @@ export default defineConfig({
       "@": path.resolve(rootDir, "src"),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        popup: path.resolve(rootDir, "popup.html"),
+        dashboard: path.resolve(rootDir, "dashboard.html"),
+        education: path.resolve(rootDir, "education.html"),
+        options: path.resolve(rootDir, "options.html"),
+      },
+    },
+  },
 });
