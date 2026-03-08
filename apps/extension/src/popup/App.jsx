@@ -65,15 +65,13 @@ export default function PopupApp() {
   }
 
   return (
-    <main className="w-[360px] bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950/60 p-4">
+    <main className="w-[360px] bg-secondary-default text-neutral-default">
+      <header className="border-b border-slate-800 bg-secondary-light p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-indigo-500 text-lg">
-            🛡️
-          </div>
+          <img src="/icons/icon128.png" className="h-8 w-auto" alt="logo" />
           <div className="flex-1">
             <p className="text-base font-bold">Escudo Digital</p>
-            <p className="text-[11px] uppercase tracking-wider text-slate-400">
+            <p className="text-[11px] uppercase tracking-wider text-neutral-dark">
               Proteccion contra violencia digital
             </p>
           </div>
@@ -95,14 +93,14 @@ export default function PopupApp() {
         </div>
       </header>
 
-      <section className="grid grid-cols-3 gap-px bg-slate-800">
-        <div className="bg-slate-900 p-3 text-center">
+      <section className="grid grid-cols-3 gap-px bg-secondary-light p-1">
+        <div className="p-3 text-center">
           <p className="text-2xl font-bold text-rose-400">{summary.total}</p>
           <p className="text-[10px] uppercase tracking-wide text-slate-400">
             Total
           </p>
         </div>
-        <div className="bg-slate-900 p-3 text-center">
+        <div className="p-3 text-center">
           <p className="text-2xl font-bold text-amber-300">
             {summary.highRisk}
           </p>
@@ -110,7 +108,7 @@ export default function PopupApp() {
             Riesgo alto
           </p>
         </div>
-        <div className="bg-slate-900 p-3 text-center">
+        <div className=" p-3 text-center">
           <p className="text-2xl font-bold text-sky-300">{summary.platforms}</p>
           <p className="text-[10px] uppercase tracking-wide text-slate-400">
             Plataformas
@@ -130,8 +128,8 @@ export default function PopupApp() {
             onClick={() => setActiveTab(tab.id)}
             className={`border-b-2 px-3 py-2 text-xs font-semibold ${
               activeTab === tab.id
-                ? "border-sky-400 text-sky-300"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-primary-default text-primary-default"
+                : "border-transparent text-slate-400 hover:text-neutral-light"
             }`}
           >
             {tab.label}
