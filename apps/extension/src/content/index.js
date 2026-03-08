@@ -219,6 +219,8 @@ function observeMessages() {
 }
 
 async function setupRewriteDetection() {
+  let lastValue = "";
+
   document.addEventListener("keydown", async (event) => {
     if (!settings.rewriteSuggestions) {
       removeRewriteSuggestion();
@@ -230,17 +232,24 @@ async function setupRewriteDetection() {
 
     clearTimeout(rewriteTimeout);
     rewriteTimeout = setTimeout(async () => {
-      const value = editableValue(target);
+      const value = editableValue(target).trim();
+
+      if (value.length < 5 || value === lastValue) return;
+      lastValue = value;
+
       console.log("Detectando sugerencias de reescritura para:", value);
 
       try {
-        const response = await fetch("http://localhost:3000/api/gemini/ask", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const response = await fetch(
+          "http://localhost:3000/api/gemini/ask-text",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ prompt: value }),
           },
-          body: JSON.stringify({ prompt: value }),
-        });
+        );
 
         if (!response.ok) {
           console.error(
@@ -251,13 +260,12 @@ async function setupRewriteDetection() {
         }
 
         const data = await response.json();
-        const suggestion =
-          data.suggestion || "No se pudo generar una sugerencia.";
+        const suggestion = data.data || "No se pudo generar una sugerencia.";
         showRewriteSuggestion(target, suggestion);
       } catch (error) {
         console.error("Error al comunicarse con el servidor:", error);
       }
-    }, 600);
+    }, 700);
   });
 }
 
