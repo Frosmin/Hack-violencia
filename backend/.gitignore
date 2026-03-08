@@ -1,0 +1,38 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno y secretos (¡NUNCA debes subir estos archivos!)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Configuraciones de editores de código e IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Archivos de cobertura de pruebas (Testing)
+coverage/
+.nyc_output/
+
+# Directorios de compilación (Útil si luego decides integrar TypeScript)
+dist/
+build/
+/src/generated/prisma
