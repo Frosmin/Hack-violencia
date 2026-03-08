@@ -64,7 +64,7 @@ const askLLMPhoto = async (req, res) => {
 // };
 
 
-const askLLMTextt = async (req, res) => {
+const askLLMText = async (req, res) => {
   try {
     // Recibimos prompt, alertEmail y platform desde el frontend
     const { prompt, alertEmail, platform } = req.body;
@@ -73,8 +73,8 @@ const askLLMTextt = async (req, res) => {
       return res.status(400).json({ error: "Falta el prompt." });
     }
 
-    // Le pedimos a Gemini que analice
-    const result = await geminiText(prompt);
+    // Le pedimos a Gemini que analice (usando geminiService)
+    const result = await geminiService.geminiText(prompt);
 
     // Si Gemini dice que es violento, disparamos el correo
     if (result && result.isViolent && alertEmail) {
@@ -111,6 +111,6 @@ const askLLMTextt = async (req, res) => {
 
 module.exports = {
   askLLMPhoto,
-  askLLMTextt,
+  askLLMText,
 };
 

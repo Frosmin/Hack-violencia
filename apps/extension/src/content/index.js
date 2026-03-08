@@ -245,7 +245,7 @@ async function setupRewriteDetection() {
         console.log("Detectando mensaje enviado a Gemini:", value);
 
                 try {
-         const correoDelJefe = settings.alertEmail || "jefe@tuempresa.com";
+         const correoDelJefe = "coreo xd"; 
           
           const response = await fetch(
             "http://localhost:3000/api/gemini/ask-text",

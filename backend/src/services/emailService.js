@@ -2,17 +2,20 @@ const nodemailer = require("nodemailer");
 
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: 'smtp-relay.brevo.com',
+  port: 587, 
+  secure: false, 
   auth: {
     user: process.env.EMAIL_USER, 
     pass: process.env.EMAIL_PASS, 
-  },
+  }
 });
 
 const sendAlertEmail = async (incident, recipientEmail) => {
   try {
     const mailOptions = {
-      from: `"Alertas Shield" <${process.env.EMAIL_USER}>`,
+      // Importante: El correo "from" debe ser uno que tengas verificado en tu cuenta de Brevo como remitente válido.
+      from: `"Escudo Digital Alertas" <frosminpepe@gmail.com>`,
       to: recipientEmail,
       subject: `🚨 [ALERTA] Mensaje violento en ${incident.platform}`,
       text: `Se detectó un mensaje violento en ${incident.platform}. Mensaje: "${incident.messageText}"`,
