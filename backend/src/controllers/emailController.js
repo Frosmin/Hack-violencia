@@ -2,7 +2,7 @@ const emailService = require('../services/emailService');
 
 const sendEmail = async (req, res) => {
   try {
-    const { to, subject, text, html, from } = req.body;
+    const { to, subject, text, html, from, hostilityDetected, incident } = req.body;
 
     const result = await emailService.sendEmail({
       to,
@@ -10,6 +10,8 @@ const sendEmail = async (req, res) => {
       text,
       html,
       from,
+      hostilityDetected,
+      incident,
     });
 
     res.status(200).json({

@@ -15,6 +15,8 @@ export default defineManifest({
     "downloads",
   ],
   host_permissions: [
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*",
     "https://web.whatsapp.com/*",
     "https://www.instagram.com/*",
     "https://www.facebook.com/*",
