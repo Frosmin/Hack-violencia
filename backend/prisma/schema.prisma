@@ -21,4 +21,15 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
+  evidences Evidence[]
+}
+
+model Evidence{
+  id Int @id @default(autoincrement())
+  type String 
+  url String
+  Sujeto String
+  description String
+  user   User   @relation(fields: [userId], references: [id])
+  userId Int
 }
