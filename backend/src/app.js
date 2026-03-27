@@ -5,6 +5,8 @@ const app = express();
 
 const geminiRoutes = require('./routes/llmRoute');
 const emailRoutes = require('./routes/emailRoute');
+const authRoutes = require('./routes/authRoute');
+
 
 
 app.use(express.json());
@@ -16,6 +18,6 @@ app.get('/', (req, res) => {
 
 app.use('/api/gemini', geminiRoutes);
 app.use('/api/email', emailRoutes);
-
+app.use('/api/auth', authRoutes);
 
 module.exports = app;
