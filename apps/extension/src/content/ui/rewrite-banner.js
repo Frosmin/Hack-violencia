@@ -17,9 +17,9 @@ export function showRewriteSuggestion(target, suggestion) {
   closeButton?.addEventListener("click", removeRewriteSuggestion);
 
   const rect = target.getBoundingClientRect();
-  rewriteBanner.style.bottom = `60px`; // Reducir la distancia desde la parte inferior
+  rewriteBanner.style.bottom = `60px`;
   rewriteBanner.style.left = `${rect.left + window.scrollX}px`;
-  rewriteBanner.style.maxWidth = "250px"; // Reducir el ancho máximo del banner
+  rewriteBanner.style.maxWidth = "250px";
 
   document.body.appendChild(rewriteBanner);
 }

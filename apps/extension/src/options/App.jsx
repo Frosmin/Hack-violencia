@@ -65,9 +65,6 @@ export default function OptionsApp() {
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-100">
       <div className="mx-auto max-w-2xl">
         <header className="mb-8 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-indigo-500 text-xl">
-            🛡️
-          </div>
           <div>
             <h1 className="text-2xl font-bold">Escudo Digital</h1>
             <p className="text-xs uppercase tracking-wide text-slate-500">

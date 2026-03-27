@@ -11,12 +11,12 @@
   },
   "keywords": [],
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^7.4.2",
     "@supabase/supabase-js": "^2.98.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "groq-sdk": "^1.1.2",
     "multer": "^2.1.1"
   },
   "devDependencies": {

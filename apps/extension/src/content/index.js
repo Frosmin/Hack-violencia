@@ -88,7 +88,6 @@ function showGroomingAlert(score) {
   alert.className = "escudo-grooming-alert";
   alert.innerHTML = `
     <div class="escudo-grooming-inner">
-      <div class="escudo-grooming-icon">🚨</div>
       <div>
         <strong>PATRON DE GROOMING DETECTADO</strong>
         <p>La conversacion muestra una escalada asociada al grooming (puntuacion: ${score}/10+).</p>
@@ -132,7 +131,7 @@ function emitIncident(incident) {
   }
 }
 
-function processNode(node) {
+async function processNode(node) {
   if (!(node instanceof HTMLElement)) return;
   if (processedNodes.has(node)) return;
   if (!node.textContent || node.textContent.trim().length < 5) return;
@@ -152,18 +151,26 @@ function processNode(node) {
   let groomingScore = 0;
   if (settings.groomingDetection) {
     const conversationId = `${location.pathname}${location.search}`;
-    const scoreResult = updateGroomingScore(
-      text,
-      conversationId,
-      groomingScores,
-    );
-    groomingScores = scoreResult.nextHistory;
-
-    if (scoreResult.added > 0) {
-      void setGroomingHistory(groomingScores);
+    // --- NUEVO: deduplicación por hash de mensaje ---
+    const msgHash = await sha256WithFallback(text);
+    if (!groomingScores._msgHashes) groomingScores._msgHashes = {};
+    if (!groomingScores._msgHashes[conversationId])
+      groomingScores._msgHashes[conversationId] = {};
+    if (groomingScores._msgHashes[conversationId][msgHash]) {
+      groomingScore = groomingScores[conversationId] || 0;
+    } else {
+      const scoreResult = updateGroomingScore(
+        text,
+        conversationId,
+        groomingScores,
+      );
+      groomingScores = scoreResult.nextHistory;
+      groomingScores._msgHashes[conversationId][msgHash] = true;
+      if (scoreResult.added > 0) {
+        void setGroomingHistory(groomingScores);
+      }
+      groomingScore = scoreResult.score;
     }
-
-    groomingScore = scoreResult.score;
     if (groomingScore >= 8) {
       showGroomingAlert(groomingScore);
     }
@@ -240,16 +247,13 @@ async function setupRewriteDetection() {
       console.log("Detectando sugerencias de reescritura para:", value);
 
       try {
-        const response = await fetch(
-          "http://localhost:3000/api/gemini/ask-text",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ prompt: value }),
+        const response = await fetch("http://localhost:3000/api/llm/ask-text", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({ prompt: value }),
+        });
 
         if (!response.ok) {
           console.error(
