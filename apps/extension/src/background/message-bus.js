@@ -54,6 +54,25 @@ async function handleMessage(message, sender) {
       return { ok: true };
     }
 
+    case "CAPTURE_SCREENSHOT": {
+      try {
+        const [tab] = await chrome.tabs.query({
+          active: true,
+          currentWindow: true,
+        });
+        if (!tab?.id) {
+          return { ok: false, error: "No active tab found" };
+        }
+        const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, {
+          format: "png",
+        });
+        return { ok: true, dataUrl };
+      } catch (err) {
+        console.error("[EscudoDigital] captureVisibleTab error:", err);
+        return { ok: false, error: String(err) };
+      }
+    }
+
     default:
       return { ok: false };
   }

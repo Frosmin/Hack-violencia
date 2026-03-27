@@ -9,6 +9,7 @@ import {
   showRewriteSuggestion,
 } from "@/content/ui/rewrite-banner";
 import { downloadEvidencePdf } from "@/shared/evidence";
+import { captureAndUploadEvidence } from "@/shared/screenshotService";
 import { sha256WithFallback } from "@/shared/hash";
 import { detectPlatform } from "@/shared/platform";
 import {
@@ -118,16 +119,19 @@ async function saveEvidence(node, result, groomingScore) {
 function emitIncident(incident) {
   sendMessage({ type: "NEW_INCIDENT", incident });
 
-  if (
-    incident.riskLevel === "HIGH" &&
-    settings.emailNotifications &&
-    settings.alertEmail
-  ) {
-    sendMessage({
-      type: "SEND_EMAIL_ALERT",
-      incident,
-      email: settings.alertEmail,
+  if (incident.riskLevel === "HIGH") {
+    // Captura automática de pantalla solo en amenazas graves
+    captureAndUploadEvidence().catch((err) => {
+      console.error("[EscudoDigital] Auto-evidence capture failed:", err);
     });
+
+    if (settings.emailNotifications && settings.alertEmail) {
+      sendMessage({
+        type: "SEND_EMAIL_ALERT",
+        incident,
+        email: settings.alertEmail,
+      });
+    }
   }
 }
 
@@ -151,7 +155,6 @@ async function processNode(node) {
   let groomingScore = 0;
   if (settings.groomingDetection) {
     const conversationId = `${location.pathname}${location.search}`;
-    // --- NUEVO: deduplicación por hash de mensaje ---
     const msgHash = await sha256WithFallback(text);
     if (!groomingScores._msgHashes) groomingScores._msgHashes = {};
     if (!groomingScores._msgHashes[conversationId])

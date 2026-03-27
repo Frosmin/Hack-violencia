@@ -1,7 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useExtensionStore } from "@/shared/state/useExtensionStore";
+import { isAuthenticated, logout, getAuthUser, getToken } from "@/shared/authService";
 import { openDashboardTab, openEducationTab, riskLabel } from "@/shared/ui";
-import { BarChart3, GraduationCap, Settings, Download } from "lucide-react";
+import {
+  BarChart3,
+  GraduationCap,
+  Settings,
+  Download,
+  LogOut,
+  Shield,
+  Eye,
+  User,
+  FileText,
+  ExternalLink,
+  RefreshCw,
+  Image as ImageIcon,
+} from "lucide-react";
+import Auth from "@/auth/auth";
+
+const EVIDENCE_API = "http://localhost:3000/api/evidence/list";
 
 function Toggle({ checked, onChange }) {
   return (
@@ -14,6 +31,71 @@ function Toggle({ checked, onChange }) {
         className={`absolute top-0.5 h-5 w-5 rounded-full bg-primary-light transition ${checked ? "left-5" : "left-0.5"}`}
       />
     </button>
+  );
+}
+
+function EvidenceCard({ evidence }) {
+  const typeColor =
+    evidence.type === "agresor"
+      ? "bg-rose-500/20 text-rose-300 border-rose-500/30"
+      : "bg-amber-500/20 text-amber-300 border-amber-500/30";
+
+  const typeLabel = evidence.type === "agresor" ? "Agresor" : "Víctima";
+
+  return (
+    <article className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 space-y-2.5 transition-all hover:border-slate-700">
+      {/* Header: type badge + ID */}
+      <div className="flex items-center gap-2">
+        <span
+          className={`rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${typeColor}`}
+        >
+          {typeLabel}
+        </span>
+        <span className="ml-auto text-[10px] text-slate-600 font-mono">
+          #{evidence.id}
+        </span>
+      </div>
+
+      {/* Screenshot thumbnail */}
+      {evidence.url && (
+        <a
+          href={evidence.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block relative group rounded-lg overflow-hidden border border-slate-700/50"
+        >
+          <img
+            src={evidence.url}
+            alt="Captura de evidencia"
+            className="w-full h-28 object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-end p-2">
+            <span className="flex items-center gap-1 text-[10px] text-white/80 bg-black/40 rounded px-1.5 py-0.5">
+              <ExternalLink className="h-3 w-3" />
+              Ver completa
+            </span>
+          </div>
+        </a>
+      )}
+
+      {/* Subject */}
+      <div className="flex items-center gap-1.5">
+        <User className="h-3.5 w-3.5 text-sky-400 shrink-0" />
+        <p className="text-[11px] text-neutral-dark">Sujeto:</p>
+        <p className="text-xs font-semibold text-sky-300 truncate">
+          {evidence.Sujeto || "Desconocido"}
+        </p>
+      </div>
+
+      {/* Description */}
+      <div className="flex gap-1.5">
+        <FileText className="h-3.5 w-3.5 text-neutral-dark shrink-0 mt-0.5" />
+        <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-3">
+          {evidence.description || "Sin descripción"}
+        </p>
+      </div>
+    </article>
   );
 }
 
@@ -32,10 +114,33 @@ export default function PopupApp() {
 
   const [activeTab, setActiveTab] = useState("recent");
   const [draftEmail, setDraftEmail] = useState("");
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authed, setAuthed] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+
+  const [evidences, setEvidences] = useState([]);
+  const [evidencesLoading, setEvidencesLoading] = useState(false);
+  const [evidencesError, setEvidencesError] = useState("");
 
   useEffect(() => {
-    void loadAll();
-  }, [loadAll]);
+    async function checkAuth() {
+      const authenticated = await isAuthenticated();
+      setAuthed(authenticated);
+      if (authenticated) {
+        const user = await getAuthUser();
+        setCurrentUser(user);
+      }
+      setAuthChecked(true);
+    }
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (authed) {
+      void loadAll();
+    }
+  }, [authed, loadAll]);
 
   useEffect(() => {
     if (!settings) return;
@@ -57,6 +162,63 @@ export default function PopupApp() {
     return { total: incidents.length, highRisk, platforms };
   }, [incidents]);
 
+  const handleLogout = useCallback(async () => {
+    await logout();
+    setAuthed(false);
+    setCurrentUser(null);
+  }, []);
+
+  const handleAuthSuccess = useCallback(async () => {
+    const user = await getAuthUser();
+    setCurrentUser(user);
+    setAuthed(true);
+  }, []);
+
+  const loadEvidences = useCallback(async () => {
+    setEvidencesLoading(true);
+    setEvidencesError("");
+    try {
+      const token = await getToken();
+      if (!token) {
+        setEvidencesError("No autenticado");
+        return;
+      }
+      const response = await fetch(EVIDENCE_API, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Error al cargar evidencias");
+      }
+      setEvidences(data.data || []);
+    } catch (err) {
+      setEvidencesError(err.message);
+    } finally {
+      setEvidencesLoading(false);
+    }
+  }, []);
+
+
+  useEffect(() => {
+    if (activeTab === "evidences" && authed) {
+      void loadEvidences();
+    }
+  }, [activeTab, authed, loadEvidences]);
+
+  if (!authChecked) {
+    return (
+      <main className="flex min-h-[480px] w-[360px] items-center justify-center bg-secondary-default text-neutral-default">
+        <span className="inline-block h-6 w-6 rounded-full border-2 border-primary-default border-t-transparent animate-spin" />
+      </main>
+    );
+  }
+
+
+  if (!authed) {
+    return <Auth onAuthSuccess={handleAuthSuccess} />;
+  }
+
+
   if (loading || !settings) {
     return (
       <main className="flex min-h-[500px] w-[360px] items-center justify-center bg-secondary-default text-neutral-default">
@@ -73,7 +235,7 @@ export default function PopupApp() {
           <div className="flex-1">
             <p className="text-base font-bold">Escudo Digital</p>
             <p className="text-[11px] uppercase tracking-wider text-neutral-dark">
-              Proteccion contra violencia digital
+              {currentUser?.email || "Proteccion contra violencia digital"}
             </p>
           </div>
           <button
@@ -83,11 +245,10 @@ export default function PopupApp() {
                 protectionEnabled: !settings.protectionEnabled,
               });
             }}
-            className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wide ${
-              settings.protectionEnabled
+            className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wide ${settings.protectionEnabled
                 ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
                 : "border-slate-600 bg-slate-800 text-slate-300"
-            }`}
+              }`}
           >
             {settings.protectionEnabled ? "Activo" : "Pausado"}
           </button>
@@ -117,9 +278,10 @@ export default function PopupApp() {
         </div>
       </section>
 
-      <nav className="flex border-b border-slate-800 px-3 pt-1">
+      <nav className="flex border-b border-slate-800 px-2 pt-1">
         {[
           { id: "recent", label: "Recientes" },
+          { id: "evidences", label: "Evidencias" },
           { id: "quick", label: "Accesos" },
           { id: "settings", label: "Config" },
         ].map((tab) => (
@@ -127,11 +289,10 @@ export default function PopupApp() {
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`border-b-2 px-3 py-2 text-xs font-semibold ${
-              activeTab === tab.id
+            className={`border-b-2 px-2.5 py-2 text-xs font-semibold ${activeTab === tab.id
                 ? "border-primary-default text-primary-default"
                 : "border-transparent text-slate-400 hover:text-neutral-light"
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -169,11 +330,10 @@ export default function PopupApp() {
               >
                 <div className="mb-1 flex items-center gap-2">
                   <span
-                    className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                      incident.riskLevel === "HIGH"
+                    className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${incident.riskLevel === "HIGH"
                         ? "bg-rose-500/20 text-rose-300"
                         : "bg-amber-500/20 text-amber-300"
-                    }`}
+                      }`}
                   >
                     {riskLabel(incident.riskLevel)}
                   </span>
@@ -196,6 +356,64 @@ export default function PopupApp() {
               </article>
             ))}
           </div>
+        </section>
+      )}
+
+      {activeTab === "evidences" && (
+        <section className="p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Shield className="h-4 w-4 text-primary-default" />
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-dark">
+                Evidencias guardadas
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void loadEvidences()}
+              disabled={evidencesLoading}
+              className="flex items-center gap-1 rounded-md border border-primary-default px-2 py-1 text-[10px] font-semibold text-primary-default hover:bg-primary-default/10 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-3 w-3 ${evidencesLoading ? "animate-spin" : ""}`} />
+              Actualizar
+            </button>
+          </div>
+
+          {evidencesError && (
+            <div className="mb-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
+              {evidencesError}
+            </div>
+          )}
+
+          {evidencesLoading && evidences.length === 0 && (
+            <div className="flex justify-center py-10">
+              <span className="inline-block h-5 w-5 rounded-full border-2 border-primary-default border-t-transparent animate-spin" />
+            </div>
+          )}
+
+          <div className="max-h-[340px] space-y-2.5 overflow-y-auto pr-1">
+            {!evidencesLoading && evidences.length === 0 && !evidencesError && (
+              <div className="rounded-xl border border-slate-800 bg-secondary-light p-6 text-center">
+                <ImageIcon className="h-8 w-8 text-slate-600 mx-auto mb-2" />
+                <p className="text-sm text-slate-400">
+                  Sin evidencias guardadas.
+                </p>
+                <p className="text-[11px] text-slate-600 mt-1">
+                  Las capturas se generan automáticamente al detectar amenazas graves.
+                </p>
+              </div>
+            )}
+
+            {evidences.map((evidence) => (
+              <EvidenceCard key={evidence.id} evidence={evidence} />
+            ))}
+          </div>
+
+          {evidences.length > 0 && (
+            <p className="mt-2 text-center text-[10px] text-slate-600">
+              {evidences.length} evidencia{evidences.length !== 1 ? "s" : ""} guardada{evidences.length !== 1 ? "s" : ""}
+            </p>
+          )}
         </section>
       )}
 
@@ -330,6 +548,17 @@ export default function PopupApp() {
               </p>
             )}
           </article>
+
+          {/* Logout */}
+          <button
+            id="auth-logout"
+            type="button"
+            onClick={() => void handleLogout()}
+            className="w-full flex items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-xs font-bold text-rose-400 transition-all hover:bg-rose-500/20"
+          >
+            <LogOut className="h-4 w-4" />
+            Cerrar Sesión
+          </button>
         </section>
       )}
     </main>
