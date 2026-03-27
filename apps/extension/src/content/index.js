@@ -247,16 +247,13 @@ async function setupRewriteDetection() {
       console.log("Detectando sugerencias de reescritura para:", value);
 
       try {
-        const response = await fetch(
-          "http://localhost:3000/api/gemini/ask-text",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ prompt: value }),
+        const response = await fetch("http://localhost:3000/api/llm/ask-text", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({ prompt: value }),
+        });
 
         if (!response.ok) {
           console.error(

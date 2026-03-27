@@ -1,5 +1,5 @@
 ###
-POST http://localhost:3000/api/gemini/ask-text
+POST http://localhost:3000/api/llm/ask-text
 Content-Type: application/json
 
 {
