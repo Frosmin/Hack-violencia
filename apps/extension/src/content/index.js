@@ -61,6 +61,16 @@ function editableValue(element) {
   return "";
 }
 
+function isWhatsAppSidebarPreview(node) {
+  if (platform !== "WhatsApp") return false;
+
+  return Boolean(
+    node.closest(
+      "aside, [role='navigation'], [data-testid*='chat'], [aria-label*='chat' i]",
+    ),
+  );
+}
+
 async function buildIncident(text, result, extra = {}) {
   const timestamp = new Date().toISOString();
   const hash = await sha256WithFallback(`${platform}::${text}`);
@@ -177,7 +187,11 @@ async function processNode(node) {
   }
 
   createWarningBanner(node, result, {
-    initiallyHidden: settings.autoHideDangerous,
+    initiallyHidden: settings.autoHideDangerous || isWhatsAppSidebarPreview(node),
+    forceHidden: isWhatsAppSidebarPreview(node),
+    compactPreview: isWhatsAppSidebarPreview(node),
+    bannerMessage:
+      "Se detecto un mensaje potencialmente peligroso",
     onSaveEvidence: () => {
       void saveEvidence(node, result, groomingScore);
     },
