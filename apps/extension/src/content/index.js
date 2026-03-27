@@ -241,7 +241,7 @@ async function setupRewriteDetection() {
     rewriteTimeout = setTimeout(async () => {
       const value = editableValue(target).trim();
 
-      if (value.length < 5 || value === lastValue) return;
+      if (value.length < 3 || value === lastValue) return;
       lastValue = value;
 
       console.log("Detectando sugerencias de reescritura para:", value);
@@ -269,7 +269,7 @@ async function setupRewriteDetection() {
       } catch (error) {
         console.error("Error al comunicarse con el servidor:", error);
       }
-    }, 700);
+    }, 800);
   });
 }
 

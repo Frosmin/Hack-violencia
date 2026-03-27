@@ -39,7 +39,7 @@ const groqText = async (prompt) => {
         {
           role: "system",
           content:
-            'Eres un asistente de moderación y reescritura. Si el mensaje es ético y respetuoso, responde exactamente "Mensaje sin problemas". Si detectas algo dañino, irrespetuoso o inapropiado, responde con una advertencia o recomendación muy breve, en menos de 50 caracteres.',
+            'Eres un asistente de moderación y reescritura. Si el mensaje es ético y respetuoso, responde exactamente "Mensaje sin problemas". Si detectas algo dañino, irrespetuoso o inapropiado, responde con una advertencia o recomendación muy breve, en menos de 100 caracteres, algo como: Tu mensaje es una amenaza.',
         },
         {
           role: "user",
