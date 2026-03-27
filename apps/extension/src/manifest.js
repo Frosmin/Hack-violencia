@@ -64,7 +64,7 @@ export default defineManifest({
   options_page: "options.html",
   web_accessible_resources: [
     {
-      resources: ["dashboard.html", "education.html"],
+      resources: ["dashboard.html", "education.html", "evidences.html"],
       matches: ["<all_urls>"],
     },
   ],

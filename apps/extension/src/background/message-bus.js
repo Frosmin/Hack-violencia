@@ -54,6 +54,13 @@ async function handleMessage(message, sender) {
       return { ok: true };
     }
 
+    case "OPEN_EVIDENCES": {
+      await chrome.tabs.create({
+        url: chrome.runtime.getURL("evidences.html"),
+      });
+      return { ok: true };
+    }
+
     case "CAPTURE_SCREENSHOT": {
       try {
         const [tab] = await chrome.tabs.query({
@@ -65,6 +72,7 @@ async function handleMessage(message, sender) {
         }
         const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, {
           format: "png",
+          quality: 100,
         });
         return { ok: true, dataUrl };
       } catch (err) {
