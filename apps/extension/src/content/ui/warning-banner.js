@@ -1,7 +1,4 @@
 export function createWarningBanner(node, result, options) {
-  const parent = node.parentNode;
-  if (!parent) return null;
-
   const wrapper = document.createElement("div");
   wrapper.className = "escudo-warning-wrapper";
   wrapper.dataset.risk = result.riskLevel;
@@ -10,50 +7,51 @@ export function createWarningBanner(node, result, options) {
   banner.className = "escudo-warning-banner";
   banner.innerHTML = `
     <div class="escudo-banner-header">
-      <span class="escudo-icon">${result.emoji}</span>
-      <span class="escudo-title">ESCUDO DIGITAL - ${result.riskLevel === "HIGH" ? "RIESGO ALTO" : "ADVERTENCIA"}</span>
+      <span class="escudo-icon">⚠️</span>
+      <span class="escudo-title">ESCUDO DIGITAL - CONTENIDO POTENCIALMENTE HOSTIL</span>
       <span class="escudo-badge">${result.category}</span>
     </div>
     <div class="escudo-banner-body">
-      <p>Se detecto un mensaje potencialmente peligroso: <strong>${result.category}</strong></p>
+      <p>Tu mensaje contiene contenido que puede ser hostil o violento.</p>
       <div class="escudo-actions">
-        <button class="escudo-btn escudo-btn-show">Ver mensaje</button>
-        <button class="escudo-btn escudo-btn-evidence">Guardar evidencia</button>
-        <button class="escudo-btn escudo-btn-dismiss">✕ Ignorar</button>
+        <button class="escudo-btn escudo-btn-send">Enviar igual</button>
+        <button class="escudo-btn escudo-btn-edit">✏️ Modificar</button>
+        <button class="escudo-btn escudo-btn-cancel">✕ Cancelar</button>
       </div>
     </div>
   `;
 
-  let hidden = Boolean(options.initiallyHidden);
-  if (hidden) node.style.display = "none";
+  const sendBtn = banner.querySelector(".escudo-btn-send");
+  const editBtn = banner.querySelector(".escudo-btn-edit");
+  const cancelBtn = banner.querySelector(".escudo-btn-cancel");
 
-  const showButton = banner.querySelector(".escudo-btn-show");
-  const evidenceButton = banner.querySelector(".escudo-btn-evidence");
-  const dismissButton = banner.querySelector(".escudo-btn-dismiss");
-
-  showButton?.addEventListener("click", () => {
-    hidden = !hidden;
-    node.style.display = hidden ? "none" : "";
-    showButton.textContent = hidden ? "👁️ Ver mensaje" : "🙈 Ocultar";
-  });
-
-  evidenceButton?.addEventListener("click", () => {
-    if (typeof options.onSaveEvidence === "function") {
-      options.onSaveEvidence();
-    }
-  });
-
-  dismissButton?.addEventListener("click", () => {
+  sendBtn?.addEventListener("click", () => {
     wrapper.remove();
-    node.style.display = "";
-    if (typeof options.onDismiss === "function") {
-      options.onDismiss();
+    if (typeof options.onSendAnyway === "function") {
+      options.onSendAnyway();
     }
   });
 
-  wrapper.appendChild(banner);
-  parent.insertBefore(wrapper, node);
-  wrapper.appendChild(node);
+  editBtn?.addEventListener("click", () => {
+    wrapper.remove();
+    if (typeof options.onEdit === "function") {
+      options.onEdit();
+    }
+  });
+
+  cancelBtn?.addEventListener("click", () => {
+    wrapper.remove();
+    if (typeof options.onCancel === "function") {
+      options.onCancel();
+    }
+  });
+
+  const parent = node.parentNode;
+  if (parent) {
+    parent.insertBefore(wrapper, node);
+  } else {
+    document.body.appendChild(wrapper);
+  }
 
   return wrapper;
 }

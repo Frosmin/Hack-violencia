@@ -2,7 +2,6 @@ const geminiService = require('../services/geminiService');
 
 const askLLMPhoto = async (req, res) => {
   try {
-    // Aceptamos que body traiga imageBase64 y mimeType también
     const { prompt, imageBase64: bodyB64, mimeType: bodyMime } = req.body;
     const file = req.file;
 
@@ -15,7 +14,7 @@ const askLLMPhoto = async (req, res) => {
 
     if (file) {
       imageBase64 = file.buffer.toString('base64');
-      mimeType = file.mimetype; 
+      mimeType = file.mimetype;
     }
 
     if (!imageBase64) {
@@ -36,33 +35,6 @@ const askLLMPhoto = async (req, res) => {
   }
 };
 
-
-
-const askLLMText = async (req, res) => {
-  try {
-    const { prompt } = req.body;
-
-    if (!prompt) {
-      return res.status(400).json({ error: "El campo 'prompt' es requerido" });
-    }
-
-    const respuesta = await geminiService.geminiText(prompt);
-
-
-    res.status(200).json({
-      success: true,
-      data: respuesta
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-};
-
 module.exports = {
   askLLMPhoto,
-  askLLMText,
 };
-

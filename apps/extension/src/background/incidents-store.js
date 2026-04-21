@@ -13,10 +13,7 @@ export async function persistIncident(partialIncident, tab) {
     messageText: partialIncident.messageText,
     timestamp: partialIncident.timestamp,
     hash: partialIncident.hash,
-    htmlSnapshot: partialIncident.htmlSnapshot,
-    url: partialIncident.url,
-    groomingScore: partialIncident.groomingScore,
-    tabUrl: tab?.url || "unknown",
+    url: tab?.url || "unknown",
     tabTitle: tab?.title || "unknown",
   };
 

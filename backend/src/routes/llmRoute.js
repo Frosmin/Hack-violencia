@@ -7,6 +7,5 @@ const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/ask-photo', upload.single('image'),  llmController.askLLMPhoto);
-router.post('/ask-text', llmController.askLLMText);
 
 module.exports = router;
