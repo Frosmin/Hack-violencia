@@ -1,5 +1,5 @@
 import "@/content/content.css";
-import { analyzeHostileIntent } from "@/content/ml/text-classifier";
+import { analyzeHostileIntent, loadModel} from "@/content/ml/text-classifier";
 import { createWarningBanner } from "@/content/ui/warning-banner";
 import {
   removeRewriteSuggestion,
@@ -130,6 +130,7 @@ async function bootstrap() {
 
   setupEnterDetection();
   console.log(`[EscudoDigital] Protección activa en ${platform}`);
+  loadModel();
 }
 
 void bootstrap();
