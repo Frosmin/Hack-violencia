@@ -62,6 +62,16 @@ function editableValue(element) {
   return "";
 }
 
+function isWhatsAppSidebarPreview(node) {
+  if (platform !== "WhatsApp") return false;
+
+  return Boolean(
+    node.closest(
+      "aside, [role='navigation'], [data-testid*='chat'], [aria-label*='chat' i]",
+    ),
+  );
+}
+
 async function buildIncident(text, result, extra = {}) {
   const timestamp = new Date().toISOString();
   const hash = await sha256WithFallback(`${platform}::${text}`);
@@ -180,7 +190,11 @@ async function processNode(node) {
   }
 
   createWarningBanner(node, result, {
-    initiallyHidden: settings.autoHideDangerous,
+    initiallyHidden: settings.autoHideDangerous || isWhatsAppSidebarPreview(node),
+    forceHidden: isWhatsAppSidebarPreview(node),
+    compactPreview: isWhatsAppSidebarPreview(node),
+    bannerMessage:
+      "Se detecto un mensaje potencialmente peligroso",
     onSaveEvidence: () => {
       void saveEvidence(node, result, groomingScore);
     },
@@ -244,22 +258,19 @@ async function setupRewriteDetection() {
     rewriteTimeout = setTimeout(async () => {
       const value = editableValue(target).trim();
 
-      if (value.length < 5 || value === lastValue) return;
+      if (value.length < 3 || value === lastValue) return;
       lastValue = value;
 
       console.log("Detectando sugerencias de reescritura para:", value);
 
       try {
-        const response = await fetch(
-          "http://localhost:3000/api/gemini/ask-text",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ prompt: value }),
+        const response = await fetch("http://localhost:3000/api/llm/ask-text", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({ prompt: value }),
+        });
 
         if (!response.ok) {
           console.error(
@@ -275,7 +286,7 @@ async function setupRewriteDetection() {
       } catch (error) {
         console.error("Error al comunicarse con el servidor:", error);
       }
-    }, 700);
+    }, 800);
   });
 }
 

@@ -1,4 +1,4 @@
-const geminiService = require('../services/geminiService');
+const groqService = require("../services/groqService");
 
 const askLLMPhoto = async (req, res) => {
   try {
@@ -14,29 +14,31 @@ const askLLMPhoto = async (req, res) => {
     let mimeType = bodyMime || null;
 
     if (file) {
-      imageBase64 = file.buffer.toString('base64');
-      mimeType = file.mimetype; 
+      imageBase64 = file.buffer.toString("base64");
+      mimeType = file.mimetype;
     }
 
     if (!imageBase64) {
       return res.status(400).json({ error: "Se requiere una imagen" });
     }
 
-    const respuesta = await geminiService.geminiPhoto(prompt, imageBase64, mimeType);
+    const respuesta = await groqService.groqPhoto(
+      prompt,
+      imageBase64,
+      mimeType,
+    );
 
     res.status(200).json({
       success: true,
-      data: respuesta
+      data: respuesta,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 };
-
-
 
 const askLLMText = async (req, res) => {
   try {
@@ -46,17 +48,16 @@ const askLLMText = async (req, res) => {
       return res.status(400).json({ error: "El campo 'prompt' es requerido" });
     }
 
-    const respuesta = await geminiService.geminiText(prompt);
-
+    const respuesta = await groqService.groqText(prompt);
 
     res.status(200).json({
       success: true,
-      data: respuesta
+      data: respuesta,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -65,4 +66,3 @@ module.exports = {
   askLLMPhoto,
   askLLMText,
 };
-
