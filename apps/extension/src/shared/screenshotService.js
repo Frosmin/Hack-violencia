@@ -32,6 +32,7 @@ export async function captureAndUploadEvidence() {
 }
 
 export async function captureWithContext(metadata) {
+  console.log("[EscudoDigital] Initiating evidence capture with metadata:", metadata);
   const token = await getToken();
   if (!token) {
     console.warn("[EscudoDigital] No auth token found, skipping evidence upload");

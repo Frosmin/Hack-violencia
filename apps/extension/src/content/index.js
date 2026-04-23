@@ -99,12 +99,12 @@ function setupEnterDetection() {
 
       if (result.hostile) {
         console.log("[EscudoDigital] HOSTILE detected! Showing warning.");
-        showWarning(target, {
-          category: result.category,
-          riskLevel: "HIGH",
-          messageText: value.slice(0, 500),
-          patternKey: "ml_detected",
-        });
+        // showWarning(target, {
+        //   category: result.category,
+        //   riskLevel: "HIGH",
+        //   messageText: value.slice(0, 500),
+        //   patternKey: "ml_detected",
+        // });
         captureWithContext({
           platform: location.hostname,
           category: result.category,
