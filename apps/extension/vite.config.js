@@ -20,6 +20,7 @@ export default defineConfig({
         popup: path.resolve(rootDir, "popup.html"),
         dashboard: path.resolve(rootDir, "dashboard.html"),
         education: path.resolve(rootDir, "education.html"),
+        evidences: path.resolve(rootDir, "evidences.html"),
         options: path.resolve(rootDir, "options.html"),
       },
     },

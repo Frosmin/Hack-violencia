@@ -1,7 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useExtensionStore } from "@/shared/state/useExtensionStore";
-import { openDashboardTab, openEducationTab, riskLabel } from "@/shared/ui";
-import { BarChart3, GraduationCap, Settings, Download } from "lucide-react";
+import { isAuthenticated, logout, getAuthUser } from "@/shared/authService";
+import { openDashboardTab, openEducationTab, openEvidencesTab, riskLabel } from "@/shared/ui";
+import {
+  BarChart3,
+  GraduationCap,
+  Settings,
+  Download,
+  LogOut,
+  Shield,
+} from "lucide-react";
+import Auth from "@/auth/auth";
 
 function Toggle({ checked, onChange }) {
   return (
@@ -32,10 +41,28 @@ export default function PopupApp() {
 
   const [activeTab, setActiveTab] = useState("recent");
   const [draftEmail, setDraftEmail] = useState("");
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authed, setAuthed] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    void loadAll();
-  }, [loadAll]);
+    async function checkAuth() {
+      const authenticated = await isAuthenticated();
+      setAuthed(authenticated);
+      if (authenticated) {
+        const user = await getAuthUser();
+        setCurrentUser(user);
+      }
+      setAuthChecked(true);
+    }
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (authed) {
+      void loadAll();
+    }
+  }, [authed, loadAll]);
 
   useEffect(() => {
     if (!settings) return;
@@ -57,6 +84,30 @@ export default function PopupApp() {
     return { total: incidents.length, highRisk, platforms };
   }, [incidents]);
 
+  const handleLogout = useCallback(async () => {
+    await logout();
+    setAuthed(false);
+    setCurrentUser(null);
+  }, []);
+
+  const handleAuthSuccess = useCallback(async () => {
+    const user = await getAuthUser();
+    setCurrentUser(user);
+    setAuthed(true);
+  }, []);
+
+  if (!authChecked) {
+    return (
+      <main className="flex min-h-[480px] w-[360px] items-center justify-center bg-secondary-default text-neutral-default">
+        <span className="inline-block h-6 w-6 rounded-full border-2 border-primary-default border-t-transparent animate-spin" />
+      </main>
+    );
+  }
+
+  if (!authed) {
+    return <Auth onAuthSuccess={handleAuthSuccess} />;
+  }
+
   if (loading || !settings) {
     return (
       <main className="flex min-h-[500px] w-[360px] items-center justify-center bg-secondary-default text-neutral-default">
@@ -73,7 +124,7 @@ export default function PopupApp() {
           <div className="flex-1">
             <p className="text-base font-bold">Escudo Digital</p>
             <p className="text-[11px] uppercase tracking-wider text-neutral-dark">
-              Proteccion contra violencia digital
+              {currentUser?.email || "Proteccion contra violencia digital"}
             </p>
           </div>
           <button
@@ -83,11 +134,10 @@ export default function PopupApp() {
                 protectionEnabled: !settings.protectionEnabled,
               });
             }}
-            className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wide ${
-              settings.protectionEnabled
-                ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
-                : "border-slate-600 bg-slate-800 text-slate-300"
-            }`}
+            className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wide ${settings.protectionEnabled
+              ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
+              : "border-slate-600 bg-slate-800 text-slate-300"
+              }`}
           >
             {settings.protectionEnabled ? "Activo" : "Pausado"}
           </button>
@@ -127,11 +177,10 @@ export default function PopupApp() {
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`border-b-2 px-3 py-2 text-xs font-semibold ${
-              activeTab === tab.id
-                ? "border-primary-default text-primary-default"
-                : "border-transparent text-slate-400 hover:text-neutral-light"
-            }`}
+            className={`border-b-2 px-3 py-2 text-xs font-semibold ${activeTab === tab.id
+              ? "border-primary-default text-primary-default"
+              : "border-transparent text-slate-400 hover:text-neutral-light"
+              }`}
           >
             {tab.label}
           </button>
@@ -169,11 +218,10 @@ export default function PopupApp() {
               >
                 <div className="mb-1 flex items-center gap-2">
                   <span
-                    className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                      incident.riskLevel === "HIGH"
-                        ? "bg-rose-500/20 text-rose-300"
-                        : "bg-amber-500/20 text-amber-300"
-                    }`}
+                    className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${incident.riskLevel === "HIGH"
+                      ? "bg-rose-500/20 text-rose-300"
+                      : "bg-amber-500/20 text-amber-300"
+                      }`}
                   >
                     {riskLabel(incident.riskLevel)}
                   </span>
@@ -209,6 +257,17 @@ export default function PopupApp() {
             <BarChart3 className="h-5 w-5 text-neutral-default" />
             <p className="mt-1 text-xs font-semibold text-neutral-default">
               Dashboard
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={openEvidencesTab}
+            className="flex gap-2 esc-card p-4 text-left hover:border-primary-dark"
+          >
+            <Shield className="h-5 w-5 text-neutral-default" />
+            <p className="mt-1 text-xs font-semibold text-neutral-default">
+              Evidencias
             </p>
           </button>
 
@@ -330,6 +389,17 @@ export default function PopupApp() {
               </p>
             )}
           </article>
+
+          {/* Logout */}
+          <button
+            id="auth-logout"
+            type="button"
+            onClick={() => void handleLogout()}
+            className="w-full flex items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-xs font-bold text-rose-400 transition-all hover:bg-rose-500/20"
+          >
+            <LogOut className="h-4 w-4" />
+            Cerrar Sesión
+          </button>
         </section>
       )}
     </main>

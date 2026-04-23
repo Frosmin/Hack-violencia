@@ -15,6 +15,8 @@ export default defineManifest({
     "downloads",
   ],
   host_permissions: [
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*",
     "https://web.whatsapp.com/*",
     "https://www.instagram.com/*",
     "https://www.facebook.com/*",
@@ -62,7 +64,7 @@ export default defineManifest({
   options_page: "options.html",
   web_accessible_resources: [
     {
-      resources: ["dashboard.html", "education.html"],
+      resources: ["dashboard.html", "education.html", "evidences.html"],
       matches: ["<all_urls>"],
     },
   ],
