@@ -7,9 +7,10 @@ const { geminiPhoto } = require('./geminiService');
  * Procesa una imagen base64, la analiza con Gemini, la sube a Cloudinary y la guarda en la BD.
  * @param {string} imageBase64 - Imagen en formato base64 (con o sin prefijo data:image/...).
  * @param {number} userId - ID del usuario que envía la evidencia.
+ * @param {Object} metadata - Metadatos adicionales (platform, category, probability, timestamp, text_snippet).
  * @returns {Promise<Object>} - La evidencia creada en la base de datos.
  */
-const processAndCreateEvidence = async (imageBase64, userId) => {
+const processAndCreateEvidence = async (imageBase64, userId, metadata = {}) => {
   try {
     // 1. Limpiar el base64 para Gemini (quitar el prefijo como 'data:image/jpeg;base64,')
     let base64Data = imageBase64;
@@ -54,13 +55,17 @@ const processAndCreateEvidence = async (imageBase64, userId) => {
     const secureUrl = await uploadImage(urlUploadToCloudinary);
 
     // 5. Guardar todo en la base de datos con Prisma
+    const metadataStr = Object.keys(metadata).length > 0
+      ? `\n\n[Metadatos de detección: ${JSON.stringify(metadata)}]`
+      : '';
+
     console.log("Guardando evidencia en la base de datos...");
     const newEvidence = await prisma.evidence.create({
       data: {
         type: geminiData.type || 'desconocido',
         url: secureUrl,
         Sujeto: geminiData.sujeto || 'Desconocido',
-        description: geminiData.description || 'Sin descripción',
+        description: (geminiData.description || 'Sin descripción') + metadataStr,
         userId: parseInt(userId, 10)
       }
     });

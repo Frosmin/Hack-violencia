@@ -7,6 +7,7 @@ import {
 } from "@/content/ui/rewrite-banner";
 import { detectPlatform } from "@/shared/platform";
 import { getSettings } from "@/shared/storage";
+import { captureWithContext } from "@/shared/screenshotService";
 
 const platform = detectPlatform(location.hostname);
 
@@ -103,6 +104,13 @@ function setupEnterDetection() {
           riskLevel: "HIGH",
           messageText: value.slice(0, 500),
           patternKey: "ml_detected",
+        });
+        captureWithContext({
+          platform: location.hostname,
+          category: result.category,
+          probability: result.probability,
+          timestamp: new Date().toISOString(),
+          text_snippet: value.slice(0, 200),
         });
       } else if (settings.rewriteSuggestions && result.probability > 0.3) {
         console.log(

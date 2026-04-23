@@ -16,8 +16,17 @@ const createEvidenceController = async (req, res) => {
       return res.status(401).json({ error: "El usuario no está autenticado." });
     }
 
+    let metadata = {};
+    if (req.body.metadata) {
+      try {
+        metadata = JSON.parse(req.body.metadata);
+      } catch (e) {
+        console.warn("Metadata no es JSON válido:", req.body.metadata);
+      }
+    }
+
     const imageBase64 = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-    const evidence = await processAndCreateEvidence(imageBase64, userId);
+    const evidence = await processAndCreateEvidence(imageBase64, userId, metadata);
 
     return res.status(201).json({
       message: "Evidencia analizada y guardada exitosamente",
