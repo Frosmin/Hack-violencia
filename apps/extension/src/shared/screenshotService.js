@@ -1,5 +1,3 @@
-
-
 import { getToken } from "@/shared/authService";
 
 const EVIDENCE_API = "http://localhost:3000/api/evidence/upload";
@@ -18,7 +16,6 @@ function requestScreenshot() {
   });
 }
 
-
 function dataUrlToBlob(dataUrl) {
   const [header, base64] = dataUrl.split(",");
   const mime = header.match(/:(.*?);/)[1];
@@ -29,7 +26,6 @@ function dataUrlToBlob(dataUrl) {
   }
   return new Blob([bytes], { type: mime });
 }
-
 
 export async function captureAndUploadEvidence() {
   return captureWithContext({});
@@ -78,41 +74,3 @@ export async function captureWithContext(metadata) {
     return null;
   }
 }
-
-
-  let dataUrl;
-  try {
-    dataUrl = await requestScreenshot();
-  } catch (err) {
-    console.error("[EscudoDigital] Screenshot capture failed:", err);
-    return null;
-  }
-
-
-  const blob = dataUrlToBlob(dataUrl);
-  const formData = new FormData();
-  formData.append("image", blob, `evidence-${Date.now()}.png`);
-
-
-  try {
-    const response = await fetch(EVIDENCE_API, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Error al subir evidencia");
-    }
-
-    console.log("[EscudoDigital] Evidence uploaded successfully:", data);
-    return data;
-  } catch (err) {
-    console.error("[EscudoDigital] Evidence upload failed:", err);
-    return null;
-  }
-
