@@ -36,3 +36,4 @@ coverage/
 dist/
 build/
 
+.agents
