@@ -35,4 +35,5 @@ coverage/
 # Directorios de compilación (Útil si luego decides integrar TypeScript)
 dist/
 build/
-/src/generated/prisma
+
+.agents

@@ -15,3 +15,9 @@ export function openEducationTab() {
     void chrome.runtime.lastError;
   });
 }
+
+export function openEvidencesTab() {
+  chrome.runtime.sendMessage({ type: "OPEN_EVIDENCES" }, () => {
+    void chrome.runtime.lastError;
+  });
+}
