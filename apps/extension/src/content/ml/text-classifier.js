@@ -61,7 +61,7 @@ export function isModelLoaded() {
 }
 
 export async function analyzeHostileIntent(text) {
-  if (!text || text.trim().length < 3) {
+  if (!text) {
     return { probability: 0, hostile: false, category: "empty" };
   }
 
