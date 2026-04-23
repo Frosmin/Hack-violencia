@@ -88,7 +88,7 @@ function setupEnterDetection() {
 
     // Snapshot before the host app consumes Enter and clears the input.
     const value = editableValue(target).trim();
-    if (value.length < 5) return;
+    if (value.length < 2) return;
 
     console.log("[EscudoDigital] Captured text:", value);
 
