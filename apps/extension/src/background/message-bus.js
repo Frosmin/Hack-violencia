@@ -70,13 +70,12 @@ async function handleMessage(message, sender) {
         if (!tab?.id) {
           return { ok: false, error: "No active tab found" };
         }
-        const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, {
-          format: "png",
-          quality: 100,
+        const response = await chrome.tabs.sendMessage(tab.id, {
+          type: "CAPTURE_SCREENSHOT",
         });
-        return { ok: true, dataUrl };
+        return response;
       } catch (err) {
-        console.error("[EscudoDigital] captureVisibleTab error:", err);
+        console.error("[EscudoDigital] Forward to content script error:", err);
         return { ok: false, error: String(err) };
       }
     }

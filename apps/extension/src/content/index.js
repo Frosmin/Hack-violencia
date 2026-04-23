@@ -8,6 +8,7 @@ import {
 import { detectPlatform } from "@/shared/platform";
 import { getSettings } from "@/shared/storage";
 import { captureWithContext } from "@/shared/screenshotService";
+import { setupScreenshotListener } from "./screenshot-handler";
 
 const platform = detectPlatform(location.hostname);
 
@@ -136,6 +137,7 @@ async function bootstrap() {
     settings = { ...settings, ...changes.settings.newValue };
   });
 
+  setupScreenshotListener();
   setupEnterDetection();
   console.log(`[EscudoDigital] Protección activa en ${platform}`);
   loadModel();
