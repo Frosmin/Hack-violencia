@@ -4,7 +4,7 @@ import {
   getIncidents,
   getSettings,
   setSettings,
-} from "@/shared/storage";
+} from "@/core/services/storage";
 
 function downloadJson(data, fileName) {
   const blob = new Blob([JSON.stringify(data, null, 2)], {

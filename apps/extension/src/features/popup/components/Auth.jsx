@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { loginUser, registerUser } from "@/shared/authService";
+import { loginUser, registerUser } from "@/core/services/authService";
 import {
   ArrowRight,
   Building2,

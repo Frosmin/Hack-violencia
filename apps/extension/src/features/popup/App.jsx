@@ -7,7 +7,7 @@ import {
   joinOrganization,
   logout,
   refreshSession,
-} from "@/shared/authService";
+} from "@/core/services/authService";
 import {
   openEducationTab,
   openOrganizationTab,
@@ -18,7 +18,7 @@ import {
   LogOut,
   Users,
 } from "lucide-react";
-import Auth from "@/auth/auth";
+import Auth from "@/features/popup/components/Auth";
 
 function Toggle({ checked, onChange }) {
   return (

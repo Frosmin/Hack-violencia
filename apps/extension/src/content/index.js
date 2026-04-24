@@ -1,13 +1,13 @@
 import "@/content/content.css";
-import { analyzeHostileIntent, loadModel} from "@/content/ml/text-classifier";
+import { analyzeHostileIntent, loadModel } from "@/core/ml/text-classifier";
 import { createWarningBanner } from "@/content/ui/warning-banner";
 import {
   removeRewriteSuggestion,
   showRewriteSuggestion,
 } from "@/content/ui/rewrite-banner";
-import { detectPlatform } from "@/shared/platform";
-import { captureAndUploadEvidence } from "@/shared/screenshotService";
-import { getSettings } from "@/shared/storage";
+import { detectPlatform } from "@/core/services/platform";
+import { captureAndUploadEvidence } from "@/core/services/screenshotService";
+import { getSettings } from "@/core/services/storage";
 
 const platform = detectPlatform(location.hostname);
 

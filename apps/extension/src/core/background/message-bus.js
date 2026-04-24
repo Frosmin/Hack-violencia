@@ -1,4 +1,4 @@
-import { clearIncidents, getIncidents } from "@/shared/storage";
+import { clearIncidents, getIncidents } from "@/core/services/storage";
 import { persistIncident } from "./incidents-store";
 
 async function notifyIncident(incident) {

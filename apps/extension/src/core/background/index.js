@@ -1,4 +1,4 @@
-import { ensureBootstrapData } from "@/shared/storage";
+import { ensureBootstrapData } from "@/core/services/storage";
 import { registerMessageBus } from "./message-bus";
 
 chrome.runtime.onInstalled.addListener(() => {

@@ -1,4 +1,4 @@
-import { getAuthSession, getToken } from "@/shared/authService";
+import { getAuthSession, getToken } from "@/core/services/authService";
 
 const EVIDENCE_API = "http://localhost:3000/api/evidence/upload";
 

@@ -18,7 +18,7 @@ export default defineManifest({
     "<all_urls>",
   ],
   background: {
-    service_worker: "src/background/index.js",
+    service_worker: "src/core/background/index.js",
   },
   content_scripts: [
     {

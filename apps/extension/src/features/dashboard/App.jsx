@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useExtensionStore } from "@/shared/state/useExtensionStore";
 import { PLATFORM_ICONS, CAT_COLORS } from "./design";
-import { getAuthSession, isOrganizationAdmin, refreshSession } from "@/shared/authService";
+import { getAuthSession, isOrganizationAdmin, refreshSession } from "@/core/services/authService";
 
 function aggregateBy(items, selector) {
   const map = {};

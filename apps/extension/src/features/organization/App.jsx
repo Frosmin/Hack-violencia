@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
-  Eye,
+  Building2,
+  Copy,
   ExternalLink,
+  Eye,
   FileText,
   Image as ImageIcon,
   RefreshCw,
   Shield,
   User,
+  Users,
   X,
 } from "lucide-react";
 import {
@@ -16,7 +19,7 @@ import {
   isAuthenticated,
   isOrganizationAdmin,
   refreshSession,
-} from "@/shared/authService";
+} from "@/core/services/authService";
 
 const EVIDENCE_API = "http://localhost:3000/api/evidence/list";
 
@@ -60,7 +63,7 @@ function ImageModal({ src, onClose }) {
         </button>
         <img
           src={src}
-          alt="Evidencia a resolución completa"
+          alt="Evidencia en resolución completa"
           className="h-auto max-h-[85vh] w-full rounded-xl border border-slate-700/60 object-contain shadow-2xl"
         />
       </div>
@@ -70,7 +73,7 @@ function ImageModal({ src, onClose }) {
 
 function EvidenceCard({ evidence, onImageClick }) {
   return (
-    <article className="group rounded-2xl border border-slate-700/50 bg-slate-900/70 p-5 transition-all duration-300 hover:border-primary-default/30 hover:shadow-xl hover:shadow-black/20">
+    <article className="group rounded-2xl border border-slate-700/50 bg-slate-900/70 p-5 transition-all duration-300 hover:border-primary-default/40 hover:shadow-xl hover:shadow-black/20">
       <div className="mb-4 flex items-start justify-between">
         <TypeBadge type={evidence.type} />
         <span className="text-xs font-mono text-slate-600">ID #{evidence.id}</span>
@@ -98,16 +101,16 @@ function EvidenceCard({ evidence, onImageClick }) {
       )}
 
       <div className="space-y-3">
-        <div className="flex items-center gap-2 rounded-xl bg-slate-800/50 px-3 py-2.5">
-          <User className="h-4 w-4 shrink-0 text-sky-400" />
-          <div>
+        <div className="rounded-xl bg-slate-800/50 px-3 py-2.5">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <User className="h-3.5 w-3.5 shrink-0 text-sky-400" />
             <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
               Usuario que hizo la agresión
             </p>
-            <p className="text-sm font-bold text-slate-200">
-              {evidence.user?.email || "No disponible"}
-            </p>
           </div>
+          <p className="text-sm font-bold text-slate-200">
+            {evidence.user?.email || "Sin autor"}
+          </p>
         </div>
 
         {evidence.detectedText && (
@@ -130,16 +133,14 @@ function EvidenceCard({ evidence, onImageClick }) {
           </div>
         )}
 
-        <div className="flex items-center gap-2 rounded-xl bg-slate-800/50 px-3 py-2.5">
-          <User className="h-4 w-4 shrink-0 text-sky-400" />
-          <div>
+        <div className="rounded-xl bg-slate-800/50 px-3 py-2.5">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 shrink-0 text-primary-default" />
             <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
               Sujeto identificado
             </p>
-            <p className="text-sm font-bold text-sky-300">
-              {evidence.Sujeto || "Desconocido"}
-            </p>
           </div>
+          <p className="text-sm font-bold text-sky-300">{evidence.Sujeto || "Desconocido"}</p>
         </div>
 
         <div className="rounded-xl bg-slate-800/50 px-3 py-2.5">
@@ -170,12 +171,13 @@ function EvidenceCard({ evidence, onImageClick }) {
   );
 }
 
-export default function EvidencesApp() {
+export default function OrganizationApp() {
   const [session, setSession] = useState(null);
-  const [evidences, setEvidences] = useState([]);
+  const [authed, setAuthed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [authed, setAuthed] = useState(false);
+  const [copyMessage, setCopyMessage] = useState("");
+  const [evidences, setEvidences] = useState([]);
   const [modalImage, setModalImage] = useState(null);
 
   useEffect(() => {
@@ -193,6 +195,8 @@ export default function EvidencesApp() {
       } catch {
         const storedSession = await getAuthSession();
         setSession(storedSession);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -205,15 +209,18 @@ export default function EvidencesApp() {
     try {
       const token = await getToken();
       if (!token) {
-        setError("No estás autenticado. Inicia sesión desde el popup de la extensión.");
-        setLoading(false);
-        return;
+        throw new Error("No estás autenticado.");
       }
+
       const response = await fetch(EVIDENCE_API, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Error al cargar evidencias");
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al cargar reportes de la organización");
+      }
+
       setEvidences(data.data || []);
     } catch (err) {
       setError(err.message);
@@ -223,58 +230,139 @@ export default function EvidencesApp() {
   }, []);
 
   useEffect(() => {
-    if (authed) void loadEvidences();
-  }, [authed, loadEvidences]);
+    if (authed && isOrganizationAdmin(session)) {
+      void loadEvidences();
+    }
+  }, [authed, session, loadEvidences]);
 
-  const stats = useMemo(() => ({
-    total: evidences.length,
-    agresores: evidences.filter((evidence) => evidence.type === "agresor").length,
-    victimas: evidences.filter((evidence) => evidence.type !== "agresor").length,
-  }), [evidences]);
+  const stats = useMemo(() => {
+    const reporters = new Set(evidences.map((evidence) => evidence.user?.email).filter(Boolean));
+    return {
+      total: evidences.length,
+      agresores: evidences.filter((evidence) => evidence.type === "agresor").length,
+      victimas: evidences.filter((evidence) => evidence.type !== "agresor").length,
+      reporters: reporters.size,
+    };
+  }, [evidences]);
+
+  const handleCopyJoinCode = async () => {
+    const joinCode = session?.organization?.joinCode;
+    if (!joinCode) return;
+
+    await navigator.clipboard.writeText(joinCode);
+    setCopyMessage("Código copiado");
+    setTimeout(() => setCopyMessage(""), 1800);
+  };
+
+  if (!authed && !loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-secondary-default p-6 text-neutral-default">
+        <div className="max-w-md rounded-3xl border border-slate-800 bg-secondary-light p-8 text-center">
+          <Building2 className="mx-auto mb-4 h-12 w-12 text-primary-default" />
+          <h1 className="mb-2 text-2xl font-extrabold">Inicia sesión en la extensión</h1>
+          <p className="text-sm text-neutral-dark">
+            El panel de organización solo está disponible para cuentas autenticadas.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (loading && !session) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-secondary-default text-neutral-default">
+        <span className="inline-block h-8 w-8 rounded-full border-2 border-primary-default border-t-transparent animate-spin" />
+      </main>
+    );
+  }
+
+  if (!isOrganizationAdmin(session)) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-secondary-default p-6 text-neutral-default">
+        <div className="max-w-lg rounded-3xl border border-slate-800 bg-secondary-light p-8 text-center">
+          <Shield className="mx-auto mb-4 h-12 w-12 text-primary-default" />
+          <h1 className="mb-2 text-2xl font-extrabold">Acceso restringido</h1>
+          <p className="text-sm text-neutral-dark">
+            Este panel está disponible solo para usuarios con rol <strong>OWNER</strong> o <strong>ADMIN</strong>.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-secondary-default text-neutral-default">
       <ImageModal src={modalImage} onClose={() => setModalImage(null)} />
 
       <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-secondary-light/95 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-6xl items-center px-5">
-          <div className="flex items-center gap-2">
+        <div className="mx-auto flex h-16 max-w-6xl items-center px-5">
+          <div className="flex items-center gap-3">
             <img src="/icons/logo.webp" className="h-9 w-auto" alt="logo" />
             <div>
               <p className="text-sm font-bold">Escudo Digital</p>
               <p className="text-[10px] uppercase tracking-wide text-neutral-dark">
-                Panel de evidencias
+                Panel organizacional
               </p>
             </div>
           </div>
-          <nav className="ml-auto flex gap-2 text-xs font-semibold">
-            <a className="rounded-md px-3 py-1.5 text-slate-300 hover:bg-white/5" href="dashboard.html">
-              Dashboard
-            </a>
-            <a className="rounded-md bg-white/10 px-3 py-1.5" href="evidences.html">
-              Evidencias
-            </a>
-            {isOrganizationAdmin(session) && (
-              <a className="rounded-md px-3 py-1.5 text-slate-300 hover:bg-white/5" href="organization.html">
-                Organización
-              </a>
-            )}
-            <a className="rounded-md px-3 py-1.5 text-slate-300 hover:bg-white/5" href="education.html">
-              Educación
-            </a>
-          </nav>
+
         </div>
       </header>
 
       <section className="mx-auto max-w-6xl px-5 py-6">
+        <div className="mb-6 flex flex-col gap-4 rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 p-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-default">
+              Organización activa
+            </p>
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              {session?.organization?.name || "Sin organización"}
+            </h1>
+            <p className="mt-2 text-sm text-neutral-dark">
+              Administra reportes y comparte el join code con tus empleados para vincularlos.
+            </p>
+            <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Rol actual: {session?.membership?.role || "Sin rol"}
+            </p>
+          </div>
+
+          <div className="min-w-[280px] rounded-2xl border border-primary-default/30 bg-primary-default/10 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-primary-default">
+              Join code
+            </p>
+            <div className="mt-2 flex items-center gap-3">
+              <code className="rounded-xl bg-slate-950/70 px-4 py-3 text-xl font-bold tracking-[0.3em] text-white">
+                {session?.organization?.joinCode || "--------"}
+              </code>
+              <button
+                type="button"
+                onClick={() => void handleCopyJoinCode()}
+                className="inline-flex items-center gap-2 rounded-xl border border-primary-default/40 px-3 py-2 text-xs font-bold text-primary-default hover:bg-primary-default/10"
+              >
+                <Copy className="h-4 w-4" />
+                Copiar
+              </button>
+            </div>
+            {copyMessage && <p className="mt-2 text-xs font-semibold text-emerald-300">{copyMessage}</p>}
+          </div>
+        </div>
+
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
+          <article className="esc-card border-t-2 border-t-primary-default p-4">
+            <p className="text-4xl font-extrabold text-primary-light">{stats.total}</p>
+            <p className="esc-title mt-1">Reportes totales</p>
+          </article>
+          <article className="esc-card border-t-2 border-t-sky-500 p-4">
+            <p className="text-4xl font-extrabold text-sky-300">{stats.reporters}</p>
+            <p className="esc-title mt-1">Usuarios reportando</p>
+          </article>
+        </div>
+
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="mb-1 flex items-center gap-3 text-3xl font-extrabold tracking-tight">
-              <Shield className="h-8 w-8 text-primary-default" />
-              Evidencias Recolectadas
-            </h1>
+            <h2 className="text-2xl font-extrabold tracking-tight">Reportes de la organización</h2>
             <p className="text-sm text-neutral-dark">
-              Capturas analizadas con IA sobre la organización vinculada a tu cuenta.
+              Agresiones detectadas automáticamente por los usuarios miembros de esta organización.
             </p>
           </div>
           <button
@@ -287,21 +375,6 @@ export default function EvidencesApp() {
           </button>
         </div>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-3">
-          <article className="esc-card border-t-2 border-t-primary-default p-4">
-            <p className="text-4xl font-extrabold text-primary-light">{stats.total}</p>
-            <p className="esc-title mt-1">Total de evidencias</p>
-          </article>
-          <article className="esc-card border-t-2 border-t-rose-500 p-4">
-            <p className="text-4xl font-extrabold text-rose-400">{stats.agresores}</p>
-            <p className="esc-title mt-1">Detectados como agresor</p>
-          </article>
-          <article className="esc-card border-t-2 border-t-amber-500 p-4">
-            <p className="text-4xl font-extrabold text-amber-300">{stats.victimas}</p>
-            <p className="esc-title mt-1">Detectados como víctima</p>
-          </article>
-        </div>
-
         {error && (
           <div className="mb-4 flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
             <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -311,8 +384,8 @@ export default function EvidencesApp() {
 
         {loading && evidences.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
-            <span className="mb-3 inline-block h-8 w-8 animate-spin rounded-full border-2 border-primary-default border-t-transparent" />
-            <p className="text-sm text-slate-400">Cargando evidencias...</p>
+            <span className="mb-3 inline-block h-8 w-8 rounded-full border-2 border-primary-default border-t-transparent animate-spin" />
+            <p className="text-sm text-slate-400">Cargando reportes...</p>
           </div>
         )}
 
@@ -320,9 +393,9 @@ export default function EvidencesApp() {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="max-w-md rounded-2xl border border-slate-800 bg-secondary-light p-8">
               <ImageIcon className="mx-auto mb-4 h-12 w-12 text-slate-600" />
-              <h2 className="mb-2 text-lg font-bold text-slate-300">Sin evidencias aún</h2>
+              <h2 className="mb-2 text-lg font-bold text-slate-300">Sin reportes todavía</h2>
               <p className="text-sm leading-relaxed text-slate-500">
-                Las capturas se generan automáticamente cuando se detectan amenazas graves en los chats monitoreados.
+                Cuando tus empleados suban evidencias desde la extensión, aparecerán aquí agrupadas para la organización.
               </p>
             </div>
           </div>
@@ -340,7 +413,7 @@ export default function EvidencesApp() {
               ))}
             </div>
             <p className="mt-6 text-center text-xs text-slate-600">
-              {evidences.length} evidencia{evidences.length !== 1 ? "s" : ""} recolectada{evidences.length !== 1 ? "s" : ""}
+              {evidences.length} reporte{evidences.length !== 1 ? "s" : ""} disponible{evidences.length !== 1 ? "s" : ""}
             </p>
           </>
         )}
