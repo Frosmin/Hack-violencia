@@ -12,7 +12,7 @@ const uploadImage = async (fileToUpload) => {
             // Optional: You can specify a folder in your Cloudinary account
             folder: 'my_express_app_uploads', 
             // Optional: You can apply transformations here (like resizing)
-            transformation: [{ width: 500, height: 500, crop: 'limit' }] 
+            transformation: [{ width: 1500, height: 1000, crop: 'limit' }] 
         });
 
         // The 'secure_url' is the HTTPS link to your stored image
