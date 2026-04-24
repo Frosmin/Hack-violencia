@@ -61,6 +61,13 @@ async function handleMessage(message, sender) {
       return { ok: true };
     }
 
+    case "OPEN_ORGANIZATION": {
+      await chrome.tabs.create({
+        url: chrome.runtime.getURL("organization.html"),
+      });
+      return { ok: true };
+    }
+
     case "CAPTURE_SCREENSHOT": {
       try {
         const [tab] = await chrome.tabs.query({

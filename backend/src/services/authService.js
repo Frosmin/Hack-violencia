@@ -12,25 +12,60 @@ const sanitizeAuthUser = (user) => ({
   email: user.email,
 });
 
-const buildMembershipPayload = (membership) => ({
-  id: membership.id,
-  role: membership.role,
-  organizationId: membership.organizationId,
-});
+const buildMembershipPayload = (membership) =>
+  membership
+    ? {
+      id: membership.id,
+      role: membership.role,
+      organizationId: membership.organizationId,
+    }
+    : null;
 
-const buildOrganizationPayload = (organization) => ({
-  id: organization.id,
-  name: organization.name,
-  joinCode: organization.joinCode,
-  createdAt: organization.createdAt,
-});
+const buildOrganizationPayload = (organization) =>
+  organization
+    ? {
+      id: organization.id,
+      name: organization.name,
+      joinCode: organization.joinCode,
+      createdAt: organization.createdAt,
+    }
+    : null;
 
-const signAccessToken = ({ userId, organizationId, organizationRole }) =>
+const signAccessToken = ({ userId, organizationId = null, organizationRole = null }) =>
   jwt.sign(
     { userId, organizationId, organizationRole },
     process.env.JWT_SECRET,
     { expiresIn: '1d' }
   );
+
+const loadUserWithOrganization = async (userId, client = prisma) =>
+  client.user.findUnique({
+    where: { id: userId },
+    include: {
+      organizationMembership: {
+        include: {
+          organization: true,
+        },
+      },
+    },
+  });
+
+const buildSessionPayload = (user) => {
+  const membership = user.organizationMembership || null;
+  const organization = membership?.organization || null;
+  const token = signAccessToken({
+    userId: user.id,
+    organizationId: organization?.id ?? null,
+    organizationRole: membership?.role ?? null,
+  });
+
+  return {
+    user: sanitizeAuthUser(user),
+    organization: buildOrganizationPayload(organization),
+    membership: buildMembershipPayload(membership),
+    token,
+  };
+};
 
 const registerUser = async (email, password, organizationName) => {
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -38,17 +73,21 @@ const registerUser = async (email, password, organizationName) => {
     throw new Error('El correo ya está registrado');
   }
 
-  const existingOrganization = await prisma.organization.findUnique({
-    where: { name: organizationName },
-  });
-  if (existingOrganization) {
-    throw new Error('El nombre de la organización ya está registrado');
+  const normalizedOrganizationName = organizationName?.trim() || null;
+
+  if (normalizedOrganizationName) {
+    const existingOrganization = await prisma.organization.findUnique({
+      where: { name: normalizedOrganizationName },
+    });
+    if (existingOrganization) {
+      throw new Error('El nombre de la organización ya está registrado');
+    }
   }
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  const result = await prisma.$transaction(async (tx) => {
+  const sessionUser = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
         email,
@@ -56,11 +95,8 @@ const registerUser = async (email, password, organizationName) => {
       },
     });
 
-    const priorMembership = await tx.organizationUser.findUnique({
-      where: { userId: user.id },
-    });
-    if (priorMembership) {
-      throw new Error('El usuario ya pertenece a una organización');
+    if (!normalizedOrganizationName) {
+      return loadUserWithOrganization(user.id, tx);
     }
 
     let organization;
@@ -68,7 +104,7 @@ const registerUser = async (email, password, organizationName) => {
       try {
         organization = await tx.organization.create({
           data: {
-            name: organizationName,
+            name: normalizedOrganizationName,
             joinCode: generateJoinCode(),
           },
         });
@@ -89,7 +125,7 @@ const registerUser = async (email, password, organizationName) => {
       throw new Error('No se pudo generar un código de organización único');
     }
 
-    const membership = await tx.organizationUser.create({
+    await tx.organizationUser.create({
       data: {
         userId: user.id,
         organizationId: organization.id,
@@ -97,21 +133,10 @@ const registerUser = async (email, password, organizationName) => {
       },
     });
 
-    return { user, organization, membership };
+    return loadUserWithOrganization(user.id, tx);
   });
 
-  const token = signAccessToken({
-    userId: result.user.id,
-    organizationId: result.organization.id,
-    organizationRole: result.membership.role,
-  });
-
-  return {
-    user: sanitizeAuthUser(result.user),
-    organization: buildOrganizationPayload(result.organization),
-    membership: buildMembershipPayload(result.membership),
-    token,
-  };
+  return buildSessionPayload(sessionUser);
 };
 
 const loginUser = async (email, password) => {
@@ -135,23 +160,59 @@ const loginUser = async (email, password) => {
     throw new Error('Credenciales inválidas');
   }
 
-  const membership = user.organizationMembership;
-  if (!membership || !membership.organization) {
-    throw new Error('El usuario no tiene una organización asociada');
-  }
-
-  const token = signAccessToken({
-    userId: user.id,
-    organizationId: membership.organization.id,
-    organizationRole: membership.role,
-  });
-
-  return {
-    user: sanitizeAuthUser(user),
-    organization: buildOrganizationPayload(membership.organization),
-    membership: buildMembershipPayload(membership),
-    token,
-  };
+  return buildSessionPayload(user);
 };
 
-module.exports = { registerUser, loginUser };
+const joinOrganization = async (userId, joinCode) => {
+  const normalizedJoinCode = joinCode?.trim().toUpperCase();
+  if (!normalizedJoinCode) {
+    throw new Error('El código de organización es requerido');
+  }
+
+  const sessionUser = await prisma.$transaction(async (tx) => {
+    const user = await loadUserWithOrganization(userId, tx);
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    if (user.organizationMembership) {
+      throw new Error('El usuario ya pertenece a una organización');
+    }
+
+    const organization = await tx.organization.findUnique({
+      where: { joinCode: normalizedJoinCode },
+    });
+
+    if (!organization) {
+      throw new Error('Código de organización inválido');
+    }
+
+    await tx.organizationUser.create({
+      data: {
+        userId: user.id,
+        organizationId: organization.id,
+        role: 'MEMBER',
+      },
+    });
+
+    return loadUserWithOrganization(user.id, tx);
+  });
+
+  return buildSessionPayload(sessionUser);
+};
+
+const getCurrentSession = async (userId) => {
+  const user = await loadUserWithOrganization(userId);
+  if (!user) {
+    throw new Error("Usuario no encontrado");
+  }
+
+  return buildSessionPayload(user);
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  joinOrganization,
+  getCurrentSession,
+};

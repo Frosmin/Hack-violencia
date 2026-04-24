@@ -1,6 +1,4 @@
-
-
-import { getToken } from "@/shared/authService";
+import { getAuthSession, getToken } from "@/shared/authService";
 
 const EVIDENCE_API = "http://localhost:3000/api/evidence/upload";
 
@@ -18,7 +16,6 @@ function requestScreenshot() {
   });
 }
 
-
 function dataUrlToBlob(dataUrl) {
   const [header, base64] = dataUrl.split(",");
   const mime = header.match(/:(.*?);/)[1];
@@ -30,14 +27,19 @@ function dataUrlToBlob(dataUrl) {
   return new Blob([bytes], { type: mime });
 }
 
-
 export async function captureAndUploadEvidence() {
   const token = await getToken();
+  const session = await getAuthSession();
+
   if (!token) {
     console.warn("[EscudoDigital] No auth token found, skipping evidence upload");
     return null;
   }
 
+  if (!session?.organization?.id) {
+    console.warn("[EscudoDigital] User has no organization, skipping evidence upload");
+    return null;
+  }
 
   let dataUrl;
   try {
@@ -47,11 +49,9 @@ export async function captureAndUploadEvidence() {
     return null;
   }
 
-
   const blob = dataUrlToBlob(dataUrl);
   const formData = new FormData();
   formData.append("image", blob, `evidence-${Date.now()}.png`);
-
 
   try {
     const response = await fetch(EVIDENCE_API, {

@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useExtensionStore } from "@/shared/state/useExtensionStore";
 import { PLATFORM_ICONS, CAT_COLORS } from "./design";
+import { getAuthSession, isOrganizationAdmin, refreshSession } from "@/shared/authService";
 
 function aggregateBy(items, selector) {
   const map = {};
@@ -14,6 +15,7 @@ function aggregateBy(items, selector) {
 export default function DashboardApp() {
   const { incidents, loading, loadAll, refreshIncidents, exportIncidents } =
     useExtensionStore();
+  const [canAccessOrganization, setCanAccessOrganization] = useState(false);
 
   useEffect(() => {
     void loadAll();
@@ -26,6 +28,20 @@ export default function DashboardApp() {
 
     return () => clearInterval(intervalId);
   }, [refreshIncidents]);
+
+  useEffect(() => {
+    async function loadSession() {
+      try {
+        const session = await refreshSession();
+        setCanAccessOrganization(isOrganizationAdmin(session));
+      } catch {
+        const session = await getAuthSession();
+        setCanAccessOrganization(isOrganizationAdmin(session));
+      }
+    }
+
+    void loadSession();
+  }, []);
 
   const summary = useMemo(() => {
     const high = incidents.filter(
@@ -84,6 +100,20 @@ export default function DashboardApp() {
             >
               Dashboard
             </a>
+            <a
+              className="rounded-md px-3 py-1.5 text-slate-300 hover:bg-white/5"
+              href="evidences.html"
+            >
+              Evidencias
+            </a>
+            {canAccessOrganization && (
+              <a
+                className="rounded-md px-3 py-1.5 text-slate-300 hover:bg-white/5"
+                href="organization.html"
+              >
+                Organización
+              </a>
+            )}
             <a
               className="rounded-md px-3 py-1.5 text-slate-300 hover:bg-white/5"
               href="education.html"

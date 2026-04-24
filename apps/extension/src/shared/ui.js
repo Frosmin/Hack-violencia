@@ -21,3 +21,9 @@ export function openEvidencesTab() {
     void chrome.runtime.lastError;
   });
 }
+
+export function openOrganizationTab() {
+  chrome.runtime.sendMessage({ type: "OPEN_ORGANIZATION" }, () => {
+    void chrome.runtime.lastError;
+  });
+}
