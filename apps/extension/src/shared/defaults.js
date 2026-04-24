@@ -1,6 +1,4 @@
 export const DEFAULT_SETTINGS = {
-  alertEmail: "",
-  emailNotifications: true,
   rewriteSuggestions: true,
   protectionEnabled: true,
 };

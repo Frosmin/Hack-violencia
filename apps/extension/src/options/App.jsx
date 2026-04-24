@@ -110,31 +110,10 @@ export default function OptionsApp() {
         </section>
 
         <section className="esc-card mb-5 p-5">
-          <p className="esc-title mb-3">Alertas por email</p>
-          <label className="mb-1 block text-sm font-semibold text-slate-200">
-            Correo de alertas
-          </label>
-          <input
-            type="email"
-            value={draft.alertEmail}
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                alertEmail: event.target.value,
-              }))
-            }
-            placeholder="tu@correo.com"
-            className="mb-3 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-500"
-          />
-
-          <Row
-            title="Activar alertas por email"
-            description="Solo para incidentes de riesgo alto"
-            value={draft.emailNotifications}
-            onChange={(value) =>
-              setDraft((current) => ({ ...current, emailNotifications: value }))
-            }
-          />
+          <p className="esc-title mb-2">Alertas organizacionales</p>
+          <p className="text-sm text-slate-400">
+            Las agresiones cometidas por usuarios vinculados a una organización se notifican al correo de la cuenta dueña de esa organización. La evidencia queda guardada con la foto del incidente.
+          </p>
         </section>
 
         <button

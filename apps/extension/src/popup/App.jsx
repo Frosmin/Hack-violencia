@@ -158,7 +158,6 @@ export default function PopupApp() {
   } = useExtensionStore();
 
   const [activeTab, setActiveTab] = useState("recent");
-  const [draftEmail, setDraftEmail] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [session, setSession] = useState(null);
@@ -196,11 +195,6 @@ export default function PopupApp() {
       void loadAll();
     }
   }, [authed, loadAll]);
-
-  useEffect(() => {
-    if (!settings) return;
-    setDraftEmail(settings.alertEmail || "");
-  }, [settings]);
 
   useEffect(() => {
     if (!saveMessage) return;
@@ -499,45 +493,12 @@ export default function PopupApp() {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-neutral-default">Alertas por correo</p>
-                <p className="text-[11px] text-neutral-dark">Notificar solo riesgo alto</p>
-              </div>
-              <Toggle
-                checked={settings.emailNotifications}
-                onChange={(checked) => {
-                  void updateSettings({ emailNotifications: checked });
-                }}
-              />
-            </div>
-          </article>
-
-          <article className="esc-card p-3">
-            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-neutral-dark">
-              Email de alertas
-            </label>
-            <input
-              type="email"
-              value={draftEmail}
-              onChange={(event) => setDraftEmail(event.target.value)}
-              placeholder="tu@correo.com"
-              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-neutral-default outline-none focus:border-primary-default"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                void updateSettings({ alertEmail: draftEmail.trim() });
-              }}
-              className="mt-3 w-full rounded-lg border border-primary-default px-3 py-2 text-xs font-bold tracking-wide text-primary-default hover:bg-primary-default/10"
-            >
-              Guardar configuración
-            </button>
-            {saveMessage && (
-              <p className="mt-2 text-center text-xs font-semibold text-emerald-300">
-                {saveMessage}
+            <div className="rounded-xl border border-sky-500/25 bg-sky-500/10 px-3 py-2">
+              <p className="text-xs font-semibold text-sky-200">Alertas organizacionales</p>
+              <p className="mt-1 text-[11px] text-slate-400">
+                Si un miembro comete una agresión, el backend guarda la foto y envía el reporte al correo dueño de la organización.
               </p>
-            )}
+            </div>
           </article>
 
           <button

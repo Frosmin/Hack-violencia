@@ -1,5 +1,4 @@
-import { clearIncidents, getIncidents, getSettings } from "@/shared/storage";
-import { sendEmailAlert } from "./email-alerts";
+import { clearIncidents, getIncidents } from "@/shared/storage";
 import { persistIncident } from "./incidents-store";
 
 async function notifyIncident(incident) {
@@ -19,14 +18,6 @@ async function handleMessage(message, sender) {
     case "NEW_INCIDENT": {
       const incident = await persistIncident(message.incident, sender.tab);
       await notifyIncident(incident);
-      return { ok: true };
-    }
-
-    case "SEND_EMAIL_ALERT": {
-      const settings = await getSettings();
-      if (settings.emailNotifications !== false) {
-        await sendEmailAlert(message.incident, message.email);
-      }
       return { ok: true };
     }
 

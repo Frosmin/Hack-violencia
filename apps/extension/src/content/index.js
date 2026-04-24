@@ -12,8 +12,6 @@ import { getSettings } from "@/shared/storage";
 const platform = detectPlatform(location.hostname);
 
 let settings = {
-  alertEmail: "",
-  emailNotifications: true,
   rewriteSuggestions: true,
   protectionEnabled: true,
 };

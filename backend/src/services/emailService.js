@@ -1,3 +1,6 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+
 const nodemailer = require('nodemailer');
 
 const HIGH_RISK_LEVELS = new Set(['MEDIUM', 'HIGH']);
@@ -59,16 +62,69 @@ const buildHostilityEmailContent = ({ incident }) => {
   return { subject, text, html };
 };
 
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const buildOrganizationAggressionEmailContent = ({ evidence, aggressorEmail, organizationName }) => {
+  const createdAt = evidence?.createdAt
+    ? new Date(evidence.createdAt).toLocaleString('es-BO')
+    : new Date().toLocaleString('es-BO');
+  const subject = `[Escudo Digital] Agresion detectada en ${organizationName || 'tu organizacion'}`;
+  const description = evidence?.description || 'Sin descripcion disponible';
+  const imageUrl = evidence?.url || 'No disponible';
+  const detectedText = evidence?.detectedText || 'No disponible';
+  const category = evidence?.detectedCategory || 'hostil';
+
+  const text = [
+    'Se detecto una agresion cometida por un usuario de la organizacion.',
+    '',
+    `Organizacion: ${organizationName || 'No disponible'}`,
+    `Usuario asociado: ${aggressorEmail || 'No disponible'}`,
+    `Categoria: ${category}`,
+    `Fecha: ${createdAt}`,
+    `Imagen de evidencia: ${imageUrl}`,
+    '',
+    'Mensaje detectado:',
+    detectedText,
+    '',
+    'Analisis:',
+    description,
+  ].join('\n');
+
+  const html = `
+    <h2>Escudo Digital - Agresion detectada</h2>
+    <p>Se detecto una agresion cometida por un usuario de la organizacion.</p>
+    <ul>
+      <li><strong>Organizacion:</strong> ${escapeHtml(organizationName || 'No disponible')}</li>
+      <li><strong>Usuario asociado:</strong> ${escapeHtml(aggressorEmail || 'No disponible')}</li>
+      <li><strong>Categoria:</strong> ${escapeHtml(category)}</li>
+      <li><strong>Fecha:</strong> ${escapeHtml(createdAt)}</li>
+    </ul>
+    <p><strong>Mensaje detectado:</strong></p>
+    <blockquote>${escapeHtml(detectedText)}</blockquote>
+    <p><strong>Analisis:</strong> ${escapeHtml(description)}</p>
+    <p><strong>Evidencia guardada:</strong> <a href="${escapeHtml(imageUrl)}">Abrir imagen</a></p>
+    ${evidence?.url ? `<p><img src="${escapeHtml(imageUrl)}" alt="Evidencia" style="max-width: 100%; border-radius: 8px;" /></p>` : ''}
+  `;
+
+  return { subject, text, html };
+};
+
 const buildTransporter = () => {
   const gmailUser = process.env.GMAIL_USER;
-  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, '');
 
   if (gmailUser && gmailAppPassword) {
     return nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: gmailUser,
-        pass: gmailAppPassword.replace(/\s+/g, ''),
+        pass: gmailAppPassword,
       },
     });
   }
@@ -129,6 +185,22 @@ const sendEmail = async ({ to, subject, text, html, from, hostilityDetected, inc
   };
 };
 
+const sendOrganizationAggressionAlert = async ({ to, evidence, aggressorEmail, organizationName }) => {
+  const template = buildOrganizationAggressionEmailContent({
+    evidence,
+    aggressorEmail,
+    organizationName,
+  });
+
+  return sendEmail({
+    to,
+    subject: template.subject,
+    text: template.text,
+    html: template.html,
+  });
+};
+
 module.exports = {
   sendEmail,
+  sendOrganizationAggressionAlert,
 };

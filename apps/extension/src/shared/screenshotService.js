@@ -30,8 +30,19 @@ function dataUrlToBlob(dataUrl) {
 export async function captureAndUploadEvidence(metadata = {}) {
   console.log("[EscudoDigital] Preparing evidence upload:", metadata);
 
-  const token = await getToken();
-  const session = await getAuthSession();
+  let token;
+  let session;
+
+  try {
+    token = await getToken();
+    session = await getAuthSession();
+  } catch (err) {
+    console.error(
+      "[EscudoDigital] Auth/session read failed. Reload the extension and the page before testing again.",
+      err,
+    );
+    return null;
+  }
 
   if (!token) {
     console.warn("[EscudoDigital] No auth token found, skipping evidence upload");

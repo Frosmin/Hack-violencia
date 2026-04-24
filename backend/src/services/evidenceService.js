@@ -1,8 +1,81 @@
 const { PrismaClient } = require('@prisma/client');
 const { uploadImage } = require('./cloudinaryService');
 const { geminiPhoto } = require('./geminiService');
+const { sendOrganizationAggressionAlert } = require('./emailService');
 
 const prisma = new PrismaClient();
+
+const findOrganizationAlertRecipient = async (organizationId) => {
+  const owner = await prisma.organizationUser.findFirst({
+    where: {
+      organizationId: parseInt(organizationId, 10),
+      role: 'OWNER',
+    },
+    include: {
+      user: {
+        select: {
+          email: true,
+        },
+      },
+      organization: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  if (owner) return owner;
+
+  return prisma.organizationUser.findFirst({
+    where: {
+      organizationId: parseInt(organizationId, 10),
+      role: 'ADMIN',
+    },
+    include: {
+      user: {
+        select: {
+          email: true,
+        },
+      },
+      organization: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+};
+
+const notifyOrganizationIfAggressor = async (evidence) => {
+  if (evidence.type !== 'agresor' || !evidence.organizationId) return null;
+
+  console.log(`Buscando destinatario de alerta para organizacion ${evidence.organizationId}...`);
+  const recipient = await findOrganizationAlertRecipient(evidence.organizationId);
+  const recipientEmail = recipient?.user?.email;
+
+  if (!recipientEmail) {
+    console.warn('No se encontro correo OWNER/ADMIN para notificar la agresion.');
+    return null;
+  }
+
+  console.log(`Enviando alerta organizacional a ${recipientEmail} por evidencia #${evidence.id}...`);
+  const result = await sendOrganizationAggressionAlert({
+    to: recipientEmail,
+    evidence,
+    aggressorEmail: evidence.user?.email,
+    organizationName: recipient.organization?.name,
+  });
+
+  console.log('Correo organizacional procesado por Nodemailer:', {
+    messageId: result.messageId,
+    accepted: result.accepted,
+    rejected: result.rejected,
+    response: result.response,
+  });
+
+  return result;
+};
 
 /**
  * Procesa una imagen base64, la analiza con Gemini, la sube a Cloudinary y la guarda en la BD.
@@ -71,7 +144,26 @@ const processAndCreateEvidence = async (imageBase64, userId, organizationId, met
         userId: parseInt(userId, 10),
         organizationId: parseInt(organizationId, 10),
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
     });
+
+    try {
+      await notifyOrganizationIfAggressor(newEvidence);
+    } catch (emailError) {
+      console.error('La evidencia se guardo, pero fallo el envio del correo organizacional:', {
+        message: emailError.message,
+        code: emailError.code,
+        command: emailError.command,
+        response: emailError.response,
+      });
+    }
 
     return newEvidence;
   } catch (error) {
