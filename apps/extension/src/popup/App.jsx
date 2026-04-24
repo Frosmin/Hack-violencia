@@ -9,20 +9,13 @@ import {
   refreshSession,
 } from "@/shared/authService";
 import {
-  openDashboardTab,
   openEducationTab,
-  openEvidencesTab,
   openOrganizationTab,
-  riskLabel,
 } from "@/shared/ui";
 import {
-  BarChart3,
   Building2,
-  Download,
   GraduationCap,
   LogOut,
-  Settings,
-  Shield,
   Users,
 } from "lucide-react";
 import Auth from "@/auth/auth";
@@ -287,20 +280,6 @@ export default function PopupApp() {
         </div>
       </header>
 
-      <section className="grid grid-cols-3 gap-px bg-secondary-light p-1">
-        <div className="p-3 text-center">
-          <p className="text-2xl font-bold text-rose-400">{summary.total}</p>
-          <p className="text-[10px] uppercase tracking-wide text-neutral-dark">Total</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className="text-2xl font-bold text-amber-300">{summary.highRisk}</p>
-          <p className="text-[10px] uppercase tracking-wide text-neutral-dark">Riesgo alto</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className="text-2xl font-bold text-sky-300">{summary.platforms}</p>
-          <p className="text-[10px] uppercase tracking-wide text-neutral-dark">Plataformas</p>
-        </div>
-      </section>
 
       <nav className="flex border-b border-slate-800 px-3 pt-1">
         {[
@@ -333,80 +312,11 @@ export default function PopupApp() {
             joinMessage={joinMessage}
             onJoinSubmit={handleJoinSubmit}
           />
-
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-dark">
-              Últimos incidentes
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                void clearAllIncidents();
-              }}
-              className="rounded-md border border-primary-default px-2 py-1 text-[10px] font-semibold text-primary-default hover:bg-primary-default/10"
-            >
-              Limpiar
-            </button>
-          </div>
-
-          <div className="max-h-60 space-y-2 overflow-y-auto pr-1">
-            {incidents.length === 0 && (
-              <div className="rounded-xl border border-slate-800 bg-secondary-light p-5 text-center text-sm text-slate-400">
-                Sin incidentes detectados.
-              </div>
-            )}
-
-            {incidents.slice(0, 20).map((incident) => (
-              <article
-                key={incident.id}
-                className="rounded-xl border border-slate-800 bg-slate-900/80 p-3"
-              >
-                <div className="mb-1 flex items-center gap-2">
-                  <span
-                    className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${incident.riskLevel === "HIGH"
-                      ? "bg-rose-500/20 text-rose-300"
-                      : "bg-amber-500/20 text-amber-300"
-                      }`}
-                  >
-                    {riskLabel(incident.riskLevel)}
-                  </span>
-                  <span className="text-[11px] text-slate-300">{incident.platform}</span>
-                  <span className="ml-auto text-[10px] text-slate-500">
-                    {new Date(incident.timestamp).toLocaleTimeString("es", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-                <p className="truncate text-xs text-slate-300">
-                  {incident.messageText || "(sin texto)"}
-                </p>
-                <p className="mt-1 text-[11px] text-slate-500">{incident.category}</p>
-              </article>
-            ))}
-          </div>
         </section>
       )}
 
       {activeTab === "quick" && (
         <section className="grid grid-cols-2 gap-2 p-4">
-          <button
-            type="button"
-            onClick={openDashboardTab}
-            className="esc-card p-4 text-left hover:border-primary-dark"
-          >
-            <BarChart3 className="h-5 w-5 text-neutral-default" />
-            <p className="mt-1 text-xs font-semibold text-neutral-default">Dashboard</p>
-          </button>
-
-          <button
-            type="button"
-            onClick={openEvidencesTab}
-            className="esc-card p-4 text-left hover:border-primary-dark"
-          >
-            <Shield className="h-5 w-5 text-neutral-default" />
-            <p className="mt-1 text-xs font-semibold text-neutral-default">Evidencias</p>
-          </button>
 
           {isOrganizationAdmin(session) && (
             <button
@@ -428,16 +338,8 @@ export default function PopupApp() {
             <p className="mt-1 text-xs font-semibold text-neutral-default">Educación</p>
           </button>
 
-          <button
-            type="button"
-            onClick={() => chrome.runtime.openOptionsPage()}
-            className="esc-card p-4 text-left hover:border-primary-dark"
-          >
-            <Settings className="h-5 w-5 text-neutral-default" />
-            <p className="mt-1 text-xs font-semibold text-neutral-default">Opciones</p>
-          </button>
 
-          <button
+          {/* <button
             type="button"
             onClick={() => {
               void exportIncidents();
@@ -446,7 +348,7 @@ export default function PopupApp() {
           >
             <Download className="h-5 w-5 text-neutral-default" />
             <p className="mt-1 text-xs font-semibold text-neutral-default">Exportar</p>
-          </button>
+          </button> */}
         </section>
       )}
 
@@ -467,31 +369,6 @@ export default function PopupApp() {
           </article>
 
           <article className="esc-card space-y-3 p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-neutral-default">Ocultar automáticamente</p>
-                <p className="text-[11px] text-neutral-dark">Oculta mensajes de riesgo alto</p>
-              </div>
-              <Toggle
-                checked={settings.autoHideDangerous}
-                onChange={(checked) => {
-                  void updateSettings({ autoHideDangerous: checked });
-                }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-neutral-default">Sugerencias de reescritura</p>
-                <p className="text-[11px] text-neutral-dark">Prevención de escritura tóxica</p>
-              </div>
-              <Toggle
-                checked={settings.rewriteSuggestions}
-                onChange={(checked) => {
-                  void updateSettings({ rewriteSuggestions: checked });
-                }}
-              />
-            </div>
 
             <div className="rounded-xl border border-sky-500/25 bg-sky-500/10 px-3 py-2">
               <p className="text-xs font-semibold text-sky-200">Alertas organizacionales</p>

@@ -2,10 +2,7 @@
 module.exports = {
   content: [
     "./popup.html",
-    "./options.html",
-    "./dashboard.html",
     "./education.html",
-    "./evidences.html",
     "./organization.html",
     "./src/**/*.{js,jsx}",
   ],
