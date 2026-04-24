@@ -1,10 +1,5 @@
 export const EMERGENCY = [
   {
-    name: "CEAC México",
-    scope: "México",
-    desc: "Apoyo a víctimas de cibercrimen",
-  },
-  {
     name: "ReportaCiberDelito",
     scope: "LATAM",
     desc: "Reporte de delitos digitales",

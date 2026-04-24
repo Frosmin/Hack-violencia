@@ -23,20 +23,6 @@ export default function EducationApp() {
               </p>
             </div>
           </div>
-          <nav className="ml-auto flex gap-2 text-xs font-semibold">
-            <a
-              className="rounded-md px-3 py-1.5 text-slate-300 hover:bg-white/5"
-              href="dashboard.html"
-            >
-              Dashboard
-            </a>
-            <a
-              className="rounded-md bg-white/10 px-3 py-1.5"
-              href="education.html"
-            >
-              Educacion
-            </a>
-          </nav>
         </div>
       </header>
 

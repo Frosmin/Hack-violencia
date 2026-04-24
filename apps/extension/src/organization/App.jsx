@@ -306,20 +306,6 @@ export default function OrganizationApp() {
             </div>
           </div>
 
-          <nav className="ml-auto flex gap-2 text-xs font-semibold">
-            <a className="rounded-md px-3 py-1.5 text-slate-300 hover:bg-white/5" href="dashboard.html">
-              Dashboard
-            </a>
-            <a className="rounded-md px-3 py-1.5 text-slate-300 hover:bg-white/5" href="evidences.html">
-              Evidencias
-            </a>
-            <a className="rounded-md bg-white/10 px-3 py-1.5" href="organization.html">
-              Organización
-            </a>
-            <a className="rounded-md px-3 py-1.5 text-slate-300 hover:bg-white/5" href="education.html">
-              Educación
-            </a>
-          </nav>
         </div>
       </header>
 
@@ -361,18 +347,10 @@ export default function OrganizationApp() {
           </div>
         </div>
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
           <article className="esc-card border-t-2 border-t-primary-default p-4">
             <p className="text-4xl font-extrabold text-primary-light">{stats.total}</p>
             <p className="esc-title mt-1">Reportes totales</p>
-          </article>
-          <article className="esc-card border-t-2 border-t-rose-500 p-4">
-            <p className="text-4xl font-extrabold text-rose-400">{stats.agresores}</p>
-            <p className="esc-title mt-1">Agresor detectado</p>
-          </article>
-          <article className="esc-card border-t-2 border-t-amber-500 p-4">
-            <p className="text-4xl font-extrabold text-amber-300">{stats.victimas}</p>
-            <p className="esc-title mt-1">Víctima detectada</p>
           </article>
           <article className="esc-card border-t-2 border-t-sky-500 p-4">
             <p className="text-4xl font-extrabold text-sky-300">{stats.reporters}</p>
