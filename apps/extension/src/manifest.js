@@ -40,10 +40,9 @@ export default defineManifest({
     48: "icons/icon48.png",
     128: "icons/icon128.png",
   },
-  options_page: "options.html",
   web_accessible_resources: [
     {
-      resources: ["dashboard.html", "education.html", "evidences.html", "organization.html"],
+      resources: ["education.html", "organization.html"],
       matches: ["<all_urls>"],
     },
   ],
