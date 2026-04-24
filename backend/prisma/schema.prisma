@@ -44,15 +44,20 @@ model OrganizationUser {
 }
 
 model Evidence {
-  id             Int           @id @default(autoincrement())
-  type           String
-  url            String
-  Sujeto         String
-  description    String
-  userId         Int
-  organizationId Int?
-  user           User          @relation(fields: [userId], references: [id])
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  id                  Int           @id @default(autoincrement())
+  type                String
+  url                 String
+  Sujeto              String
+  description         String
+  detectedText        String?
+  detectedCategory    String?
+  detectedProbability Float?
+  source              String?
+  createdAt           DateTime      @default(now())
+  userId              Int
+  organizationId      Int?
+  user                User          @relation(fields: [userId], references: [id])
+  organization        Organization? @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
 }

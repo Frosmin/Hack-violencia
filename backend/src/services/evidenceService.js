@@ -9,9 +9,10 @@ const prisma = new PrismaClient();
  * @param {string} imageBase64 - Imagen en formato base64 (con o sin prefijo data:image/...).
  * @param {number} userId - ID del usuario que envía la evidencia.
  * @param {number} organizationId - ID de la organización a la que pertenece la evidencia.
+ * @param {Object} metadata - Datos del detector local que disparó la captura.
  * @returns {Promise<Object>} - La evidencia creada en la base de datos.
  */
-const processAndCreateEvidence = async (imageBase64, userId, organizationId) => {
+const processAndCreateEvidence = async (imageBase64, userId, organizationId, metadata = {}) => {
   try {
     let base64Data = imageBase64;
     let mimeType = 'image/jpeg';
@@ -53,12 +54,20 @@ const processAndCreateEvidence = async (imageBase64, userId, organizationId) => 
     const secureUrl = await uploadImage(urlUploadToCloudinary);
 
     console.log('Guardando evidencia en la base de datos...');
+    const isHostileTextDetection = metadata.source === 'hostile_text_detection';
+    const parsedProbability = Number(metadata.detectedProbability);
     const newEvidence = await prisma.evidence.create({
       data: {
-        type: geminiData.type || 'desconocido',
+        type: isHostileTextDetection ? 'agresor' : geminiData.type || 'desconocido',
         url: secureUrl,
         Sujeto: geminiData.sujeto || 'Desconocido',
-        description: geminiData.description || 'Sin descripción',
+        description: metadata.detectedText
+          ? `Mensaje hostil detectado por la extensión: "${metadata.detectedText}". ${geminiData.description || ''}`.trim()
+          : geminiData.description || 'Sin descripción',
+        detectedText: metadata.detectedText || null,
+        detectedCategory: metadata.detectedCategory || null,
+        detectedProbability: Number.isFinite(parsedProbability) ? parsedProbability : null,
+        source: metadata.source || null,
         userId: parseInt(userId, 10),
         organizationId: parseInt(organizationId, 10),
       },

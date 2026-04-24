@@ -105,13 +105,33 @@ function EvidenceCard({ evidence, onImageClick }) {
           <div className="mb-1.5 flex items-center gap-1.5">
             <User className="h-3.5 w-3.5 shrink-0 text-sky-400" />
             <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-              Usuario reportado
+              Usuario que hizo la agresión
             </p>
           </div>
           <p className="text-sm font-bold text-slate-200">
             {evidence.user?.email || "Sin autor"}
           </p>
         </div>
+
+        {evidence.detectedText && (
+          <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2.5">
+            <div className="mb-1.5 flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-rose-300" />
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-200/80">
+                Agresión detectada
+              </p>
+            </div>
+            <p className="text-xs leading-relaxed text-rose-100">
+              "{evidence.detectedText}"
+            </p>
+            <p className="mt-2 text-[11px] font-semibold text-rose-200/70">
+              {evidence.detectedCategory || "hostil"}
+              {typeof evidence.detectedProbability === "number"
+                ? ` · ${(evidence.detectedProbability * 100).toFixed(1)}%`
+                : ""}
+            </p>
+          </div>
+        )}
 
         <div className="rounded-xl bg-slate-800/50 px-3 py-2.5">
           <div className="mb-1.5 flex items-center gap-1.5">
@@ -364,7 +384,7 @@ export default function OrganizationApp() {
           <div>
             <h2 className="text-2xl font-extrabold tracking-tight">Reportes de la organización</h2>
             <p className="text-sm text-neutral-dark">
-              Evidencias subidas por los usuarios miembros de esta organización.
+              Agresiones detectadas automáticamente por los usuarios miembros de esta organización.
             </p>
           </div>
           <button

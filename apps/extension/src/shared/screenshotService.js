@@ -27,7 +27,9 @@ function dataUrlToBlob(dataUrl) {
   return new Blob([bytes], { type: mime });
 }
 
-export async function captureAndUploadEvidence() {
+export async function captureAndUploadEvidence(metadata = {}) {
+  console.log("[EscudoDigital] Preparing evidence upload:", metadata);
+
   const token = await getToken();
   const session = await getAuthSession();
 
@@ -37,13 +39,15 @@ export async function captureAndUploadEvidence() {
   }
 
   if (!session?.organization?.id) {
-    console.warn("[EscudoDigital] User has no organization, skipping evidence upload");
+    console.warn("[EscudoDigital] User has no organization, skipping evidence upload", session);
     return null;
   }
 
   let dataUrl;
   try {
+    console.log("[EscudoDigital] Requesting visible tab screenshot.");
     dataUrl = await requestScreenshot();
+    console.log("[EscudoDigital] Screenshot captured, uploading evidence.");
   } catch (err) {
     console.error("[EscudoDigital] Screenshot capture failed:", err);
     return null;
@@ -52,6 +56,19 @@ export async function captureAndUploadEvidence() {
   const blob = dataUrlToBlob(dataUrl);
   const formData = new FormData();
   formData.append("image", blob, `evidence-${Date.now()}.png`);
+
+  if (metadata.detectedText) {
+    formData.append("detectedText", metadata.detectedText);
+  }
+  if (metadata.detectedCategory) {
+    formData.append("detectedCategory", metadata.detectedCategory);
+  }
+  if (typeof metadata.detectedProbability === "number") {
+    formData.append("detectedProbability", String(metadata.detectedProbability));
+  }
+  if (metadata.source) {
+    formData.append("source", metadata.source);
+  }
 
   try {
     const response = await fetch(EVIDENCE_API, {

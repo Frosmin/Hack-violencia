@@ -6,6 +6,7 @@ import {
   showRewriteSuggestion,
 } from "@/content/ui/rewrite-banner";
 import { detectPlatform } from "@/shared/platform";
+import { captureAndUploadEvidence } from "@/shared/screenshotService";
 import { getSettings } from "@/shared/storage";
 
 const platform = detectPlatform(location.hostname);
@@ -103,6 +104,14 @@ function setupEnterDetection() {
           riskLevel: "HIGH",
           messageText: value.slice(0, 500),
           patternKey: "ml_detected",
+        });
+
+        console.log("[EscudoDigital] Starting automatic evidence capture/upload.");
+        void captureAndUploadEvidence({
+          detectedText: value.slice(0, 1000),
+          detectedCategory: result.category,
+          detectedProbability: result.probability,
+          source: "hostile_text_detection",
         });
       } else if (settings.rewriteSuggestions && result.probability > 0.3) {
         console.log(

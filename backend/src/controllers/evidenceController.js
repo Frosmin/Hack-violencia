@@ -21,7 +21,12 @@ const createEvidenceController = async (req, res) => {
     }
 
     const imageBase64 = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-    const evidence = await processAndCreateEvidence(imageBase64, userId, organizationId);
+    const evidence = await processAndCreateEvidence(imageBase64, userId, organizationId, {
+      detectedText: req.body.detectedText,
+      detectedCategory: req.body.detectedCategory,
+      detectedProbability: req.body.detectedProbability,
+      source: req.body.source,
+    });
 
     return res.status(201).json({
       message: 'Evidencia analizada y guardada exitosamente',

@@ -1,0 +1,5 @@
+ALTER TABLE "Evidence" ADD COLUMN "detectedText" TEXT;
+ALTER TABLE "Evidence" ADD COLUMN "detectedCategory" TEXT;
+ALTER TABLE "Evidence" ADD COLUMN "detectedProbability" DOUBLE PRECISION;
+ALTER TABLE "Evidence" ADD COLUMN "source" TEXT;
+ALTER TABLE "Evidence" ADD COLUMN "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
